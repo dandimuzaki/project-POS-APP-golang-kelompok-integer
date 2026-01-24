@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"travel-api/pkg/utils"
+	"project-POS-APP-golang-integer/pkg/utils"
 
 	"time"
 

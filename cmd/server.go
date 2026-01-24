@@ -1,32 +1,45 @@
 package cmd
 
 import (
+	"context"
 	"fmt"
 	"log"
 	"net/http"
-	"travel-api/internal/wire"
+	"os"
+	"os/signal"
+	"project-POS-APP-golang-integer/internal/wire"
+	"syscall"
+	"time"
 )
 
 func APiserver(app *wire.App) {
-	fmt.Println("Server running on port 8080")
-	if err := http.ListenAndServe(":8080", app.Route); err != nil {
-		log.Fatal("can't run service")
+	fmt.Printf("Server running on port %d", app.Config.Port)
+
+	srv := &http.Server{
+		Addr: fmt.Sprintf(":%d", app.Config.Port),
+		Handler: app.Route,
 	}
 
-	// // gracefully shutdown ------------------------------------------------------------------------
-	// quit := make(chan os.Signal, 1)
-	// signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
-	// <-quit
+	go func() {
+		if err := srv.ListenAndServe(); err != nil {
+			log.Fatal("can't run service")
+		}
+	}()
 
-	// close(app.Stop)
-	// app.WG.Wait()
+	// gracefully shutdown ------------------------------------------------------------------------
+	quit := make(chan os.Signal, 1)
+	signal.Notify(quit, syscall.SIGINT, syscall.SIGTERM)
+	<-quit
 
-	// ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	// defer cancel()
-	// if err := srv.Shutdown(ctx); err != nil {
-	// 	log.Println("can't shutdown service")
-	// }
+	close(app.Stop)
+	app.WG.Wait()
 
-	// log.Println("server shutdown cleanly")
+	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
+	defer cancel()
+	if err := srv.Shutdown(ctx); err != nil {
+		log.Println("can't shutdown service")
+	}
+
+	log.Println("server shutdown cleanly")
 }
 
