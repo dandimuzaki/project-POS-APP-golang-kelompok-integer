@@ -1,45 +1,47 @@
 package wire
 
 import (
-	"project-POS-APP-golang-integer/internal/adaptor"
-	"project-POS-APP-golang-integer/internal/data/repository"
-	"project-POS-APP-golang-integer/internal/usecase"
-	mCustom "project-POS-APP-golang-integer/pkg/middleware"
-	"project-POS-APP-golang-integer/pkg/utils"
-	"sync"
+	"travel-api/internal/adaptor"
+	"travel-api/internal/data/repository"
+	"travel-api/internal/usecase"
+	"travel-api/pkg/utils"
 
-	"github.com/gin-gonic/gin"
+	mCustom "travel-api/pkg/middleware"
+
+	"github.com/go-chi/chi/middleware"
+	"github.com/go-chi/chi/v5"
 	"go.uber.org/zap"
 )
 
 type App struct {
-	Route *gin.Engine
-	Stop chan struct{}
-	WG *sync.WaitGroup
-	Config utils.Configuration
+	Route *chi.Mux
 }
 
 func Wiring(repo *repository.Repository, log *zap.Logger, config utils.Configuration) *App {
-	r := gin.Default()
-	r1 := r.Group("/api/v1")
-
-	stop := make(chan struct{})
-	wg := &sync.WaitGroup{}
+	r := chi.NewRouter()
 
 	usecase := usecase.NewUsecase(repo, log)
 	handler := adaptor.NewHandler(usecase, log, config)
 	mw := mCustom.NewMiddlewareCustom(usecase, log)
-	ApiV1(r1, &handler, mw)
+	r.Mount("/api/v1", ApiV1(&handler, mw))
 
 	return &App{
 		Route: r,
-		Stop: stop,
-		WG: wg,
-		Config: config,
 	}
 }
 
-func ApiV1(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCustom) {
-	users := r.Group("/users")
-	users.GET("/", handler.UserHandler.GetListUsers)
+func ApiV1(handler *adaptor.Handler, mw mCustom.MiddlewareCustom) *chi.Mux {
+	r := chi.NewRouter()
+	r.Use(middleware.Logger)
+	// r.Use(mw.Logging)
+
+	r.Route("/tours", func(r chi.Router) {
+		r.Get("/", handler.TourHandler.GetAllTours)
+	})
+
+	r.Route("/schedules", func(r chi.Router) {
+		r.Get("/{id}", handler.TourHandler.GetTourDetails)
+	})
+	
+	return r
 }

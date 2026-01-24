@@ -1,9 +1,9 @@
 package utils
 
 import (
-	"project-POS-APP-golang-integer/internal/dto"
-
-	"github.com/gin-gonic/gin"
+	"encoding/json"
+	"net/http"
+	"travel-api/internal/dto"
 )
 
 type Reponse struct {
@@ -13,30 +13,36 @@ type Reponse struct {
 	Errors  any    `json:"errors,omitempty"`
 }
 
-func ResponseSuccess(c *gin.Context, code int, message string, data any) {
+func ResponseSuccess(w http.ResponseWriter, code int, message string, data any) {
 	response := Reponse{
 		Status:  true,
 		Message: message,
 		Data:    data,
 	}
-	c.JSON(code, response)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	json.NewEncoder(w).Encode(response)
 }
 
-func ResponseBadRequest(c *gin.Context, code int, message string, errors any) {
+func ResponseBadRequest(w http.ResponseWriter, code int, message string, errors any) {
 	response := Reponse{
 		Status:  false,
 		Message: message,
 		Errors:  errors,
 	}
-	c.JSON(code, response)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	json.NewEncoder(w).Encode(response)
 }
 
-func ResponsePagination(c *gin.Context, code int, message string, data any, pagination dto.Pagination) {
+func ResponsePagination(w http.ResponseWriter, code int, message string, data any, pagination dto.Pagination) {
 	response := map[string]interface{}{
 		"status":     true,
 		"message":    message,
 		"data":       data,
 		"pagination": pagination,
 	}
-	c.JSON(code, response)
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(code)
+	json.NewEncoder(w).Encode(response)
 }

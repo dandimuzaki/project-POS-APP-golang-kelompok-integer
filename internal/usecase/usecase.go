@@ -1,17 +1,17 @@
 package usecase
 
 import (
-	"project-POS-APP-golang-integer/internal/data/repository"
+	"travel-api/internal/data/repository"
 
 	"go.uber.org/zap"
 )
 
 type Usecase struct{
-	UserService UserService
+	TourService TourService
 }
 
 func NewUsecase(repo *repository.Repository, log *zap.Logger) *Usecase {
 	return &Usecase{
-		UserService: NewUserService(repo, log),
+		TourService: NewTourService(repo, log),
 	}
 }

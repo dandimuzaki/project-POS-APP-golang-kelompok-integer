@@ -1,7 +1,7 @@
 package middleware
 
 import (
-	"project-POS-APP-golang-integer/internal/usecase"
+	"travel-api/internal/usecase"
 
 	"go.uber.org/zap"
 )

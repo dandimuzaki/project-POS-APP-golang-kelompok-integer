@@ -2,12 +2,12 @@ package main
 
 import (
 	"log"
-	"project-POS-APP-golang-integer/cmd"
-	"project-POS-APP-golang-integer/internal/data"
-	"project-POS-APP-golang-integer/internal/data/repository"
-	"project-POS-APP-golang-integer/internal/wire"
-	"project-POS-APP-golang-integer/pkg/database"
-	"project-POS-APP-golang-integer/pkg/utils"
+	"travel-api/cmd"
+	"travel-api/internal/data"
+	"travel-api/internal/data/repository"
+	"travel-api/internal/wire"
+	"travel-api/pkg/database"
+	"travel-api/pkg/utils"
 )
 
 func main() {
