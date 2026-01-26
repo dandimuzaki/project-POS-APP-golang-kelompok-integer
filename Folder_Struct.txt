@@ -1,0 +1,58 @@
+project-POS-APP-golang-kelompok-integer/
+├── cmd/
+│   └── server.go
+├── internal/
+│   ├── adaptor/
+│   │   ├── adaptor.go
+│   │   └── user.go
+│   ├── data/
+│   │   ├── entity/
+|   |   |   ├── category.go
+|   |   |   ├── customer.go
+|   |   |   ├── enum.go
+|   |   |   ├── inventory_log.go
+|   |   |   ├── notification.go
+|   |   |   ├── order_item.go
+|   |   |   ├── order.go
+|   |   |   ├── otp.go
+|   |   |   ├── payment_method.go
+|   |   |   ├── product.go
+|   |   |   ├── reservation.go
+|   |   |   ├── session.go
+|   |   |   ├── shift.go
+|   |   |   ├── staff.go
+|   |   |   ├── table.go
+|   |   |   ├── transaction.go
+|   |   |   └──user.go
+│   │   ├── repository/
+|   |   |   ├── repository.go
+|   |   |   └── user.go
+│   │   ├── seeder/
+│   │   │   └── user.go
+│   │   ├── migration.go
+│   │   └── seeder.go
+│   ├── dto/
+│   │   ├── request.go
+│   │   └── response.go
+│   ├── usecase/
+│   │   ├── usecase.go
+│   │   └── user.go
+│   └── wire/
+│       └── wire.go
+├── pkg/
+│   ├── database/
+│   │   └── postgres.go
+│   ├── middleware/
+│   │   ├── auth.go
+│   │   └── middleware.go
+│   └── utils/
+│       ├── config.go
+│       ├── logger.go
+│       ├── password_hash.go
+│       ├── response.go
+│       └── token.go
+├── postman/
+├── .env
+├── go.mod
+├── go.sum
+└── main.go
