@@ -1,28 +1,26 @@
 package data
 
-import "project-POS-APP-golang-integer/internal/data/entity"
+import (
+	"project-POS-APP-golang-integer/internal/data/entity"
+	"time"
+)
 
-func PaymentMethodSeeds() []entity.PaymentMethod {
+func PaymentMethodSeeds() []entity.PaymentMethod{
 	return []entity.PaymentMethod{
 		{
-			Name:     "Cash",
-			IsActive: true,
+			Name: "Gopay",
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
 		},
 		{
-			Name:     "Debit Card",
-			IsActive: true,
+			Name: "OVO",
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
 		},
 		{
-			Name:     "Credit Card",
-			IsActive: true,
-		},
-		{
-			Name:     "QRIS",
-			IsActive: true,
-		},
-		{
-			Name:     "E-Wallet",
-			IsActive: true,
+			Name: "BCA",
+			CreatedAt: time.Now(),
+			UpdatedAt: time.Now(),
 		},
 	}
 }

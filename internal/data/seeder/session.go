@@ -1,31 +1,33 @@
 package data
 
 import (
-	"time"
-
 	"project-POS-APP-golang-integer/internal/data/entity"
-
-	"gorm.io/gorm"
+	"project-POS-APP-golang-integer/pkg/utils"
+	"time"
 )
 
-func SeedSessions(db *gorm.DB) error {
-	now := time.Now()
-	exp := now.Add(24 * time.Hour)
-
-	sessions := []entity.Session{
+func SessionSeeds() []entity.Session{
+	token1, _ := utils.GenerateRandomToken(16)
+	token2, _ := utils.GenerateRandomToken(16)
+	token3, _ := utils.GenerateRandomToken(16)
+	return []entity.Session{
 		{
-			UserID:    1,
-			Token:     "token_dummy_user_1",
-			ExpiresAt: exp,
-			CreatedAt: now,
+			UserID: 1,
+			Token: token1.String(),
+			ExpiresAt: time.Now().AddDate(0,0,5),
+			CreatedAt: time.Now(),
 		},
 		{
-			UserID:    2,
-			Token:     "token_dummy_user_2",
-			ExpiresAt: exp,
-			CreatedAt: now,
+			UserID: 2,
+			Token: token2.String(),
+			ExpiresAt: time.Now().AddDate(0,0,5),
+			CreatedAt: time.Now(),
+		},
+		{
+			UserID: 3,
+			Token: token3.String(),
+			ExpiresAt: time.Now().AddDate(0,0,5),
+			CreatedAt: time.Now(),
 		},
 	}
-
-	return db.Create(&sessions).Error
 }

@@ -13,9 +13,19 @@ func UserSeeds() []entity.User {
 			Role: "superadmin",
 		},
 		{
-			Email: "dandimuzaki@gmail.com",
+			Email: "ihzhabaihaqqi05@gmail.com",
 			PasswordHash: utils.HashPassword("password123"),
 			Role: "admin",
+		},
+		{
+			Email: "raflitbl1724@gmail.com",
+			PasswordHash: utils.HashPassword("password123"),
+			Role: "staff",
+		},
+		{
+			Email: "dandimuzaki@gmail.com",
+			PasswordHash: utils.HashPassword("password123"),
+			Role: "staff",
 		},
 	}
 }
