@@ -26,14 +26,12 @@ type Order struct {
 	TaxPercentage   float64     `gorm:"not null;default:10" json:"tax_percentage"`
 	TaxAmount       float64     `gorm:"not null;default:0" json:"tax_amount"`
 	Total           float64     `gorm:"not null;default:0" json:"total"`
-	PaymentMethodID uint        `gorm:"index;not null" json:"payment_method_id"`
 	CreatedBy       uint        `gorm:"index;not null" json:"created_by"`
 	Notes           string      `json:"notes,omitempty"`
 
 	// Relations
 	Customer      Customer      `gorm:"foreignKey:CustomerID" json:"customer,omitempty"`
 	Table         Table         `gorm:"foreignKey:TableID" json:"table"`
-	PaymentMethod PaymentMethod `gorm:"foreignKey:PaymentMethodID" json:"payment_method"`
 	Creator       User          `gorm:"foreignKey:CreatedBy" json:"creator"`
 	OrderItems    []OrderItem   `gorm:"foreignKey:OrderID" json:"items"`
 	Transactions  []Transaction `gorm:"foreignKey:OrderID" json:"transactions,omitempty"`

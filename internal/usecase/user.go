@@ -36,7 +36,6 @@ func (s *userService) GetListUsers(ctx context.Context, req dto.UserFilterReques
 
 	for _, u := range users {
 		user := dto.UserResponse{
-			Name: u.Name,
 			Email: u.Email,
 			Role: u.Role,
 		}

@@ -12,20 +12,20 @@ package entity
 // ProductStatus enum
 
 // ProductAvailability enum
-type ProductAvailability string
+// type ProductAvailability string
 
-const (
-	AvailabilityInStock    ProductAvailability = "in_stock"
-	AvailabilityOutOfStock ProductAvailability = "out_of_stock"
-)
+// const (
+// 	AvailabilityInStock    ProductAvailability = "in_stock"
+// 	AvailabilityOutOfStock ProductAvailability = "out_of_stock"
+// )
 
-// CustomerTitle enum
-type CustomerTitle string
+// // CustomerTitle enum
+// type CustomerTitle string
 
-const (
-	CustomerTitleMr   CustomerTitle = "Mr"
-	CustomerTitleMrs  CustomerTitle = "Mrs"
-	CustomerTitleMs   CustomerTitle = "Ms"
-	CustomerTitleDr   CustomerTitle = "Dr"
-	CustomerTitleProf CustomerTitle = "Prof"
-)
+// const (
+// 	CustomerTitleMr   CustomerTitle = "Mr"
+// 	CustomerTitleMrs  CustomerTitle = "Mrs"
+// 	CustomerTitleMs   CustomerTitle = "Ms"
+// 	CustomerTitleDr   CustomerTitle = "Dr"
+// 	CustomerTitleProf CustomerTitle = "Prof"
+// )

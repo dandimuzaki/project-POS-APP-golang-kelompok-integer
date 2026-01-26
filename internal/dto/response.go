@@ -1,9 +1,11 @@
 package dto
 
+import "project-POS-APP-golang-integer/internal/data/entity"
+
 type UserResponse struct {
-	Name  string `json:"name"`
-	Email string `json:"email"`
-	Role  string `json:"role"`
+	Name  string          `json:"name"`
+	Email string          `json:"email"`
+	Role  entity.UserRole `json:"role"`
 }
 
 type Pagination struct {
