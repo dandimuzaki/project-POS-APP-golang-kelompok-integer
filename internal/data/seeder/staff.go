@@ -1,0 +1,31 @@
+package data
+
+import (
+	"project-POS-APP-golang-integer/internal/data/entity"
+	"time"
+)
+
+func StaffSeeds() []entity.Staff{
+	return []entity.Staff{
+		{
+			UserID: 3,
+			FullName: "Rafli Nur Rahman",
+			Phone: "087876544692",
+			DateOfBirth: time.Now(),
+			Salary: 15000000,
+			ProfileImageURL: "",
+			Address: "Jl. Soekarno-Hatta, Tangerang, Banten",
+			AdditionalDetails: "",
+		},
+		{
+			UserID: 4,
+			FullName: "Dandi Muhamad Zaki",
+			Phone: "085117388153",
+			DateOfBirth: time.Now(),
+			Salary: 15000000,
+			ProfileImageURL: "",
+			Address: "Jl. Gunung Batu, Bandung, Jawa Barat",
+			AdditionalDetails: "",
+		},
+	}
+}
