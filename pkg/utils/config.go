@@ -14,6 +14,7 @@ type Configuration struct {
 	DB          DatabaseConfig
 	SMTP SMTPConfig
 	BaseURL string
+	BusinessRules BusinessRules
 }
 
 type DatabaseConfig struct {
@@ -26,9 +27,17 @@ type DatabaseConfig struct {
 }
 
 type SMTPConfig struct {
+	Host string
 	Port int
 	Email string
 	Password string
+}
+
+type BusinessRules struct {
+	TaxRate int
+	ProfitMargin int
+	DefaultShiftStart string
+	DefaultShiftEnd string
 }
 
 func ReadConfiguration() (Configuration, error) {
@@ -56,19 +65,26 @@ func ReadConfiguration() (Configuration, error) {
 		Limit:       viper.GetInt("LIMIT"),
 		PathLogging: viper.GetString("PATH_LOGGING"),
 		DB: DatabaseConfig{
-			Name:     viper.GetString("DATABASE_NAME"),
-			Username: viper.GetString("DATABASE_USERNAME"),
-			Password: viper.GetString("DATABASE_PASSWORD"),
-			Host:     viper.GetString("DATABASE_HOST"),
-			Port:     viper.GetString("DATABASE_PORT"),
-			MaxConn:  viper.GetInt32("DATABASE_MAX_CONN"),
+			Name:     viper.GetString("DB_NAME"),
+			Username: viper.GetString("DB_USER"),
+			Password: viper.GetString("DB_PASSWORD"),
+			Host:     viper.GetString("DB_HOST"),
+			Port:     viper.GetString("DB_PORT"),
+			MaxConn:  viper.GetInt32("DB_MAX_CONN"),
 		},
 		SMTP: SMTPConfig{
+			Host: viper.GetString("SMTP_HOST"),
 			Port: viper.GetInt("SMTP_PORT"),
 			Email: viper.GetString("SMTP_EMAIL"),
 			Password: viper.GetString("SMTP_PASSWORD"),
 		},
 		BaseURL: viper.GetString("APP_URL"),
+		BusinessRules: BusinessRules{
+			TaxRate: viper.GetInt("TAX_RATE"),
+			ProfitMargin: viper.GetInt("PROFIT_MARGIN"),
+			DefaultShiftStart: viper.GetString("DEFAULT_SHIFT_START"),
+			DefaultShiftEnd: viper.GetString("DEFAULT_SHIFT_END"),
+		},
 	}, nil
 
 }

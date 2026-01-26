@@ -12,6 +12,5 @@ type PaymentMethod struct {
 	UpdatedAt time.Time `json:"updated_at"`
 
 	// Relations
-	Orders       []Order       `gorm:"foreignKey:PaymentMethodID" json:"-"`
 	Transactions []Transaction `gorm:"foreignKey:PaymentMethodID" json:"-"`
 }

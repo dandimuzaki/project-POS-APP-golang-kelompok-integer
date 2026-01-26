@@ -13,10 +13,10 @@ import (
 )
 
 func APiserver(app *wire.App) {
-	fmt.Printf("Server running on port %d", app.Config.Port)
+	fmt.Printf("Server running on port :%s", app.Config.Port)
 
 	srv := &http.Server{
-		Addr: fmt.Sprintf(":%d", app.Config.Port),
+		Addr: fmt.Sprintf(":%s", app.Config.Port),
 		Handler: app.Route,
 	}
 
