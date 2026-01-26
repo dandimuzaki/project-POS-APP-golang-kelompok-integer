@@ -25,6 +25,7 @@ func AutoMigrate(db *gorm.DB) error {
 		&entity.Customer{},
 		&entity.Order{},
 		&entity.Reservation{},
+		&entity.OrderItem{},
 		
 		// Payment
 		&entity.PaymentMethod{},
