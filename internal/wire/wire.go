@@ -41,5 +41,5 @@ func Wiring(repo *repository.Repository, log *zap.Logger, config utils.Configura
 
 func ApiV1(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCustom) {
 	users := r.Group("/users")
-	users.GET("/", handler.UserHandler.GetListUsers)
+	users.GET("/", handler.UserHandler.GetUserList)
 }

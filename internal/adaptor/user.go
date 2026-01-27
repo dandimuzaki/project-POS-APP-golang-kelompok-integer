@@ -24,7 +24,7 @@ func NewUserAdaptor(service *usecase.Usecase, log *zap.Logger, config utils.Conf
 	}
 }
 
-func (h *UserHandler) GetListUsers(c *gin.Context) {
+func (h *UserHandler) GetUserList(c *gin.Context) {
 	ctx := c.Request.Context()
 
 	role := c.Query("role")
@@ -34,7 +34,7 @@ func (h *UserHandler) GetListUsers(c *gin.Context) {
 		Role: role,
 	}
 
-	result, pagination, err := h.service.UserService.GetListUsers(ctx, req)
+	result, pagination, err := h.service.UserService.GetUserList(ctx, req)
 	if err != nil {
 		utils.ResponseBadRequest(c, http.StatusBadGateway, "", nil)
 		return

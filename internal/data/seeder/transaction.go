@@ -10,6 +10,7 @@ func TransactionSeeds() []entity.Transaction {
 		{
 			TransactionNumber: "TRX001",
 			OrderID: 1,
+			PaymentMethodID: 1,
 			TransactionType: entity.TransactionTypePayment,
 			Amount: 200000,
 			Status: entity.TransactionStatusCompleted,
@@ -20,6 +21,7 @@ func TransactionSeeds() []entity.Transaction {
 		{
 			TransactionNumber: "TRX002",
 			OrderID: 2,
+			PaymentMethodID: 1,
 			TransactionType: entity.TransactionTypePayment,
 			Amount: 300000,
 			Status: entity.TransactionStatusCompleted,
