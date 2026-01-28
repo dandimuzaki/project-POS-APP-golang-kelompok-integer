@@ -16,7 +16,7 @@ type UserHandler struct {
 	Config utils.Configuration
 }
 
-func NewUserAdaptor(service *usecase.Usecase, log *zap.Logger, config utils.Configuration) UserHandler {
+func NewUserHandler(service *usecase.Usecase, log *zap.Logger, config utils.Configuration) UserHandler {
 	return UserHandler{
 		service: service,
 		Logger: log,
@@ -36,7 +36,7 @@ func (h *UserHandler) GetUserList(c *gin.Context) {
 
 	result, pagination, err := h.service.UserService.GetUserList(ctx, req)
 	if err != nil {
-		utils.ResponseBadRequest(c, http.StatusBadGateway, "", nil)
+		utils.ResponseFailed(c, http.StatusBadGateway, "", nil)
 		return
 	}
 

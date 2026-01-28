@@ -13,9 +13,9 @@ type UserRepository interface {
 	Create(ctx context.Context, user *entity.User) (*entity.User, error)
 	FindByEmail(ctx context.Context, email string) (*entity.User, error)
 	GetUserList(ctx context.Context, f dto.UserFilterRequest) ([]entity.User, int64, error)
-	GetByID(ctx context.Context, id int) (entity.User, error)
-	Update(ctx context.Context, id int, data *entity.User) error
-	Delete(ctx context.Context, id int) error
+	GetByID(ctx context.Context, id uint) (entity.User, error)
+	Update(ctx context.Context, id uint, data *entity.User) error
+	Delete(ctx context.Context, id uint) error
 }
 
 type userRepository struct {
@@ -60,7 +60,7 @@ func (r *userRepository) Create(ctx context.Context, user *entity.User) (*entity
 
 func (r *userRepository) FindByEmail(ctx context.Context, email string) (*entity.User, error) {
 	var user entity.User
-	query := r.db.Model(&user).Where("email = ?", email).Limit(1)
+	query := r.db.WithContext(ctx).Model(&user).Where("email = ?", email).Limit(1)
 	err := query.Find(&user).Error
 	if err != nil {
 		return nil, err
@@ -96,7 +96,7 @@ func (r *userRepository) GetUserList(ctx context.Context, f dto.UserFilterReques
 	return users, total, nil
 }
 
-func (r *userRepository) GetByID(ctx context.Context, id int) (entity.User, error) {
+func (r *userRepository) GetByID(ctx context.Context, id uint) (entity.User, error) {
 	var user entity.User
 	query := r.db.Model(&user).Where("id = ?", id).Limit(1)
 	err := query.Find(&user).Error
@@ -107,7 +107,7 @@ func (r *userRepository) GetByID(ctx context.Context, id int) (entity.User, erro
 	return user, nil
 }
 
-func (r *userRepository) Update(ctx context.Context, id int, u *entity.User) error {
+func (r *userRepository) Update(ctx context.Context, id uint, u *entity.User) error {
 	tx := r.db.Begin()
 	if tx.Error != nil {
 		return tx.Error
@@ -127,7 +127,7 @@ func (r *userRepository) Update(ctx context.Context, id int, u *entity.User) err
 	return nil
 }
 
-func (r *userRepository) Delete(ctx context.Context, id int) error {
+func (r *userRepository) Delete(ctx context.Context, id uint) error {
 	err := r.db.Delete(&entity.User{}, id).Error
 	if err != nil {
 		r.Logger.Error("Error query delete user", zap.Error(err))

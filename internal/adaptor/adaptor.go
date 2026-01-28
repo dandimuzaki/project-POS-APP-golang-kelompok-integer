@@ -9,10 +9,12 @@ import (
 
 type Handler struct{
 	UserHandler UserHandler
+	AuthHandler AuthHandler
 }
 
 func NewHandler(u *usecase.Usecase, log *zap.Logger, config utils.Configuration) Handler {
 	return Handler{
-		UserHandler: NewUserAdaptor(u, log, config),
+		UserHandler: NewUserHandler(u, log, config),
+		AuthHandler: NewAuthHandler(u, log, config),
 	}
 }

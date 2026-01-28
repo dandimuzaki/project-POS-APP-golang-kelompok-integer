@@ -26,7 +26,7 @@ func Wiring(repo *repository.Repository, log *zap.Logger, config utils.Configura
 	stop := make(chan struct{})
 	wg := &sync.WaitGroup{}
 
-	usecase := usecase.NewUsecase(repo, log)
+	usecase := usecase.NewUsecase(repo, log, config)
 	handler := adaptor.NewHandler(usecase, log, config)
 	mw := mCustom.NewMiddlewareCustom(usecase, log)
 	ApiV1(r1, &handler, mw)
@@ -40,6 +40,10 @@ func Wiring(repo *repository.Repository, log *zap.Logger, config utils.Configura
 }
 
 func ApiV1(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCustom) {
-	users := r.Group("/users")
-	users.GET("/", handler.UserHandler.GetUserList)
+	AuthRoute(r.Group("/auth"), handler, mw)
+}
+
+func AuthRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCustom) {
+	r.POST("/login", handler.AuthHandler.Login)
+	r.POST("/logout", mw.AuthMiddleware()(), handler.AuthHandler.Logout)
 }

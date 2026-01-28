@@ -10,3 +10,8 @@ type CreateUserRequest struct {
 	Email string `json:"email" validate:"email"`
 	Role  string `json:"role"`
 }
+
+type LoginRequest struct {
+	Email    string `json:"email" validate:"email"`
+	Password string `json:"password"`
+}

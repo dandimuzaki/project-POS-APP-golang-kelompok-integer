@@ -3,6 +3,7 @@ package usecase
 import (
 	"context"
 	"math"
+	"project-POS-APP-golang-integer/internal/data/entity"
 	"project-POS-APP-golang-integer/internal/data/repository"
 	"project-POS-APP-golang-integer/internal/dto"
 
@@ -11,6 +12,7 @@ import (
 
 type UserService interface{
 	GetUserList(ctx context.Context, req dto.UserFilterRequest) ([]dto.UserResponse, dto.Pagination, error)
+	GetByID(ctx context.Context, id uint) (entity.User, error)
 }
 
 type userService struct {
@@ -52,4 +54,13 @@ func (s *userService) GetUserList(ctx context.Context, req dto.UserFilterRequest
 	}
 
 	return res, pagination, err
+}
+
+func (s *userService) GetByID(ctx context.Context, id uint) (entity.User, error) {
+	user, err := s.repo.UserRepo.GetByID(ctx, id)
+	if err != nil {
+		s.Logger.Error("Error get user by id service", zap.Error(err))
+		return entity.User{}, err
+	}
+	return user, nil
 }
