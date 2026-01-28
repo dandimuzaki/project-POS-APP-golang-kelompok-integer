@@ -13,19 +13,19 @@ func SessionSeeds() []entity.Session{
 	return []entity.Session{
 		{
 			UserID: 1,
-			Token: token1.String(),
+			Token: token1,
 			ExpiresAt: time.Now().AddDate(0,0,5),
 			CreatedAt: time.Now(),
 		},
 		{
 			UserID: 2,
-			Token: token2.String(),
+			Token: token2,
 			ExpiresAt: time.Now().AddDate(0,0,5),
 			CreatedAt: time.Now(),
 		},
 		{
 			UserID: 3,
-			Token: token3.String(),
+			Token: token3,
 			ExpiresAt: time.Now().AddDate(0,0,5),
 			CreatedAt: time.Now(),
 		},

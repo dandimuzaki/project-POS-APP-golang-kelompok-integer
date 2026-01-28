@@ -10,7 +10,7 @@ import (
 )
 
 type UserService interface{
-	GetListUsers(ctx context.Context, req dto.UserFilterRequest) ([]dto.UserResponse, dto.Pagination, error)
+	GetUserList(ctx context.Context, req dto.UserFilterRequest) ([]dto.UserResponse, dto.Pagination, error)
 }
 
 type userService struct {
@@ -25,8 +25,8 @@ func NewUserService(repo *repository.Repository, log *zap.Logger) UserService {
 	}
 }
 
-func (s *userService) GetListUsers(ctx context.Context, req dto.UserFilterRequest) ([]dto.UserResponse, dto.Pagination, error) {
-	users, total, err := s.repo.UserRepo.GetListUsers(ctx, req)
+func (s *userService) GetUserList(ctx context.Context, req dto.UserFilterRequest) ([]dto.UserResponse, dto.Pagination, error) {
+	users, total, err := s.repo.UserRepo.GetUserList(ctx, req)
 	if err != nil {
 		s.Logger.Error("Error get users service", zap.Error(err))
 		return nil, dto.Pagination{}, err
