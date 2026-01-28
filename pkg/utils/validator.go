@@ -36,6 +36,10 @@ func ValidateErrors(data any) ([]FieldError, error) {
 				message = fmt.Sprintf("%s must be at least %s characters long", err.Field(), err.Param())
 			case "eqfield":
 				message = fmt.Sprintf("%s must match %s", err.Field(), err.Param())
+			case "oneof":
+				message = fmt.Sprintf("%s must be one of: %s", err.Field(), err.Param())
+			case "len":
+				message = fmt.Sprintf("%s must be exactly %s characters", err.Field(), err.Param())
 			default:
 				message = fmt.Sprintf("%s is invalid", err.Field())
 			}
