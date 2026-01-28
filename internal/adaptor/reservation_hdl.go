@@ -33,7 +33,7 @@ func (rh *ReservationHandler) CreateReservation(c *gin.Context) {
 	// Bind JSON
 	if err := c.ShouldBindJSON(&req); err != nil {
 		rh.log.Warn("Failed to bind request body", zap.Error(err))
-		utils.ResponseBadRequest(c, 400, "Invalid request body", err.Error())
+		utils.ResponseFailed(c, 400, "Invalid request body", err.Error())
 		return
 	}
 
@@ -43,7 +43,7 @@ func (rh *ReservationHandler) CreateReservation(c *gin.Context) {
 			zap.Any("errors", validationErrors),
 			zap.Error(err))
 
-		utils.ResponseBadRequest(c, 400, "Validation failed", validationErrors)
+		utils.ResponseFailed(c, 400, "Validation failed", validationErrors)
 		return
 	}
 
@@ -53,9 +53,9 @@ func (rh *ReservationHandler) CreateReservation(c *gin.Context) {
 		rh.log.Error("Failed to create reservation", zap.Error(err))
 
 		if utils.IsBusinessError(err) {
-			utils.ResponseBadRequest(c, 400, err.Error(), nil)
+			utils.ResponseFailed(c, 400, err.Error(), nil)
 		} else {
-			utils.ResponseBadRequest(c, 500, "Failed to create reservation", nil)
+			utils.ResponseFailed(c, 500, "Failed to create reservation", nil)
 		}
 		return
 	}
@@ -73,7 +73,7 @@ func (rh *ReservationHandler) GetReservations(c *gin.Context) {
 	// Bind query
 	if err := c.ShouldBindQuery(&req); err != nil {
 		rh.log.Warn("Failed to bind query parameters", zap.Error(err))
-		utils.ResponseBadRequest(c, 400, "Invalid query parameters", err.Error())
+		utils.ResponseFailed(c, 400, "Invalid query parameters", err.Error())
 		return
 	}
 
@@ -81,7 +81,7 @@ func (rh *ReservationHandler) GetReservations(c *gin.Context) {
 	result, err := rh.srv.GetReservations(req)
 	if err != nil {
 		rh.log.Error("Failed to get reservations", zap.Error(err))
-		utils.ResponseBadRequest(c, 500, "Failed to get reservations", nil)
+		utils.ResponseFailed(c, 500, "Failed to get reservations", nil)
 		return
 	}
 
@@ -104,7 +104,7 @@ func (rh *ReservationHandler) GetReservationByID(c *gin.Context) {
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
 		rh.log.Warn("Invalid reservation ID", zap.String("id", idStr), zap.Error(err))
-		utils.ResponseBadRequest(c, 400, "Invalid reservation ID", nil)
+		utils.ResponseFailed(c, 400, "Invalid reservation ID", nil)
 		return
 	}
 
@@ -114,9 +114,9 @@ func (rh *ReservationHandler) GetReservationByID(c *gin.Context) {
 		rh.log.Error("Failed to get reservation", zap.Uint("id", uint(id)), zap.Error(err))
 
 		if err == utils.ErrReservationNotFound {
-			utils.ResponseBadRequest(c, 404, "Reservation not found", nil)
+			utils.ResponseFailed(c, 404, "Reservation not found", nil)
 		} else {
-			utils.ResponseBadRequest(c, 500, "Failed to get reservation", nil)
+			utils.ResponseFailed(c, 500, "Failed to get reservation", nil)
 		}
 		return
 	}
@@ -130,21 +130,21 @@ func (rh *ReservationHandler) UpdateReservationStatus(c *gin.Context) {
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
 		rh.log.Warn("Invalid reservation ID", zap.String("id", idStr), zap.Error(err))
-		utils.ResponseBadRequest(c, 400, "Invalid reservation ID", nil)
+		utils.ResponseFailed(c, 400, "Invalid reservation ID", nil)
 		return
 	}
 
 	var req request.UpdateReservationRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		rh.log.Warn("Failed to bind request body", zap.Error(err))
-		utils.ResponseBadRequest(c, 400, "Invalid request body", err.Error())
+		utils.ResponseFailed(c, 400, "Invalid request body", err.Error())
 		return
 	}
 
 	// Validate
 	if validationErrors, err := utils.ValidateErrors(req); err != nil {
 		rh.log.Warn("Request validation failed", zap.Any("errors", validationErrors))
-		utils.ResponseBadRequest(c, 400, "Validation failed", validationErrors)
+		utils.ResponseFailed(c, 400, "Validation failed", validationErrors)
 		return
 	}
 
@@ -156,11 +156,11 @@ func (rh *ReservationHandler) UpdateReservationStatus(c *gin.Context) {
 			zap.Error(err))
 
 		if err == utils.ErrReservationNotFound {
-			utils.ResponseBadRequest(c, 404, "Reservation not found", nil)
+			utils.ResponseFailed(c, 404, "Reservation not found", nil)
 		} else if utils.IsBusinessError(err) {
-			utils.ResponseBadRequest(c, 400, err.Error(), nil)
+			utils.ResponseFailed(c, 400, err.Error(), nil)
 		} else {
-			utils.ResponseBadRequest(c, 500, "Failed to update reservation status", nil)
+			utils.ResponseFailed(c, 500, "Failed to update reservation status", nil)
 		}
 		return
 	}
@@ -178,7 +178,7 @@ func (rh *ReservationHandler) CancelReservation(c *gin.Context) {
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
 		rh.log.Warn("Invalid reservation ID", zap.String("id", idStr), zap.Error(err))
-		utils.ResponseBadRequest(c, 400, "Invalid reservation ID", nil)
+		utils.ResponseFailed(c, 400, "Invalid reservation ID", nil)
 		return
 	}
 
@@ -188,7 +188,7 @@ func (rh *ReservationHandler) CancelReservation(c *gin.Context) {
 
 	if err := c.ShouldBindJSON(&req); err != nil {
 		rh.log.Warn("Failed to bind request body", zap.Error(err))
-		utils.ResponseBadRequest(c, 400, "Invalid request body", err.Error())
+		utils.ResponseFailed(c, 400, "Invalid request body", err.Error())
 		return
 	}
 
@@ -197,11 +197,11 @@ func (rh *ReservationHandler) CancelReservation(c *gin.Context) {
 		rh.log.Error("Failed to cancel reservation", zap.Uint("id", uint(id)), zap.Error(err))
 
 		if err == utils.ErrReservationNotFound {
-			utils.ResponseBadRequest(c, 404, "Reservation not found", nil)
+			utils.ResponseFailed(c, 404, "Reservation not found", nil)
 		} else if utils.IsBusinessError(err) {
-			utils.ResponseBadRequest(c, 400, err.Error(), nil)
+			utils.ResponseFailed(c, 400, err.Error(), nil)
 		} else {
-			utils.ResponseBadRequest(c, 500, "Failed to cancel reservation", nil)
+			utils.ResponseFailed(c, 500, "Failed to cancel reservation", nil)
 		}
 		return
 	}
@@ -217,7 +217,7 @@ func (rh *ReservationHandler) CheckIn(c *gin.Context) {
 	id, err := strconv.ParseUint(idStr, 10, 32)
 	if err != nil {
 		rh.log.Warn("Invalid reservation ID", zap.String("id", idStr), zap.Error(err))
-		utils.ResponseBadRequest(c, 400, "Invalid reservation ID", nil)
+		utils.ResponseFailed(c, 400, "Invalid reservation ID", nil)
 		return
 	}
 
@@ -226,11 +226,11 @@ func (rh *ReservationHandler) CheckIn(c *gin.Context) {
 		rh.log.Error("Failed to check in reservation", zap.Uint("id", uint(id)), zap.Error(err))
 
 		if err == utils.ErrReservationNotFound {
-			utils.ResponseBadRequest(c, 404, "Reservation not found", nil)
+			utils.ResponseFailed(c, 404, "Reservation not found", nil)
 		} else if utils.IsBusinessError(err) {
-			utils.ResponseBadRequest(c, 400, err.Error(), nil)
+			utils.ResponseFailed(c, 400, err.Error(), nil)
 		} else {
-			utils.ResponseBadRequest(c, 500, "Failed to check in reservation", nil)
+			utils.ResponseFailed(c, 500, "Failed to check in reservation", nil)
 		}
 		return
 	}
@@ -247,13 +247,13 @@ func (rh *ReservationHandler) GetAvailableTables(c *gin.Context) {
 	paxStr := c.Query("pax")
 
 	if date == "" || time == "" || paxStr == "" {
-		utils.ResponseBadRequest(c, 400, "date, time, and pax parameters are required", nil)
+		utils.ResponseFailed(c, 400, "date, time, and pax parameters are required", nil)
 		return
 	}
 
 	pax, err := strconv.Atoi(paxStr)
 	if err != nil || pax <= 0 {
-		utils.ResponseBadRequest(c, 400, "pax must be a positive integer", nil)
+		utils.ResponseFailed(c, 400, "pax must be a positive integer", nil)
 		return
 	}
 
@@ -267,9 +267,9 @@ func (rh *ReservationHandler) GetAvailableTables(c *gin.Context) {
 			zap.Error(err))
 
 		if utils.IsBusinessError(err) {
-			utils.ResponseBadRequest(c, 400, err.Error(), nil)
+			utils.ResponseFailed(c, 400, err.Error(), nil)
 		} else {
-			utils.ResponseBadRequest(c, 500, "Failed to get available tables", nil)
+			utils.ResponseFailed(c, 500, "Failed to get available tables", nil)
 		}
 		return
 	}

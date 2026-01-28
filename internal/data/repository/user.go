@@ -10,12 +10,12 @@ import (
 )
 
 type UserRepository interface {
-	Create(ctx context.Context, user *entity.User) (*entity.User, error)
-	FindByEmail(ctx context.Context, email string) (*entity.User, error)
+	CreateUser(ctx context.Context, user *entity.User) (*entity.User, error)
+	FindUserByEmail(ctx context.Context, email string) (*entity.User, error)
 	GetUserList(ctx context.Context, f dto.UserFilterRequest) ([]entity.User, int64, error)
-	GetByID(ctx context.Context, id int) (entity.User, error)
-	Update(ctx context.Context, id int, data *entity.User) error
-	Delete(ctx context.Context, id int) error
+	GetUserByID(ctx context.Context, id uint) (entity.User, error)
+	UpdateUser(ctx context.Context, id uint, data *entity.User) error
+	DeleteUser(ctx context.Context, id uint) error
 }
 
 type userRepository struct {
@@ -30,26 +30,15 @@ func NewUserRepo(db *gorm.DB, log *zap.Logger) UserRepository {
 	}
 }
 
-func (r *userRepository) Create(ctx context.Context, user *entity.User) (*entity.User, error) {
-	tx := r.db.Begin()
-	if tx.Error != nil {
-		return nil, tx.Error
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			tx.Rollback()
-		} else {
-			tx.Commit()
-		}
-	}()
-	err := tx.Create(&user).Error
+func (r *userRepository) CreateUser(ctx context.Context, user *entity.User) (*entity.User, error) {
+	err := r.db.Create(&user).Error
 	if err != nil {
 		r.Logger.Error("Error query create user", zap.Error(err))
 		return nil, err
 	}
 	if user.Role == "staff" {
 		var staff entity.Staff
-		err = tx.Create(&staff).Error
+		err = r.db.Create(&staff).Error
 		if err != nil {
 			r.Logger.Error("Error query create staff", zap.Error(err))
 			return nil, err
@@ -58,9 +47,9 @@ func (r *userRepository) Create(ctx context.Context, user *entity.User) (*entity
 	return user, err
 }
 
-func (r *userRepository) FindByEmail(ctx context.Context, email string) (*entity.User, error) {
+func (r *userRepository) FindUserByEmail(ctx context.Context, email string) (*entity.User, error) {
 	var user entity.User
-	query := r.db.Model(&user).Where("email = ?", email).Limit(1)
+	query := r.db.WithContext(ctx).Model(&user).Where("email = ?", email).Limit(1)
 	err := query.Find(&user).Error
 	if err != nil {
 		return nil, err
@@ -96,7 +85,7 @@ func (r *userRepository) GetUserList(ctx context.Context, f dto.UserFilterReques
 	return users, total, nil
 }
 
-func (r *userRepository) GetByID(ctx context.Context, id int) (entity.User, error) {
+func (r *userRepository) GetUserByID(ctx context.Context, id uint) (entity.User, error) {
 	var user entity.User
 	query := r.db.Model(&user).Where("id = ?", id).Limit(1)
 	err := query.Find(&user).Error
@@ -107,19 +96,8 @@ func (r *userRepository) GetByID(ctx context.Context, id int) (entity.User, erro
 	return user, nil
 }
 
-func (r *userRepository) Update(ctx context.Context, id int, u *entity.User) error {
-	tx := r.db.Begin()
-	if tx.Error != nil {
-		return tx.Error
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			tx.Rollback()
-		} else {
-			tx.Commit()
-		}
-	}()
-	err := tx.Save(u).Error
+func (r *userRepository) UpdateUser(ctx context.Context, id uint, u *entity.User) error {
+	err := r.db.Save(u).Error
 	if err != nil {
 		r.Logger.Error("Error query update user", zap.Error(err))
 		return err
@@ -127,7 +105,7 @@ func (r *userRepository) Update(ctx context.Context, id int, u *entity.User) err
 	return nil
 }
 
-func (r *userRepository) Delete(ctx context.Context, id int) error {
+func (r *userRepository) DeleteUser(ctx context.Context, id uint) error {
 	err := r.db.Delete(&entity.User{}, id).Error
 	if err != nil {
 		r.Logger.Error("Error query delete user", zap.Error(err))

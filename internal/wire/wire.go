@@ -27,7 +27,7 @@ func Wiring(db *gorm.DB, repo *repository.Repository, log *zap.Logger, config ut
 	stop := make(chan struct{})
 	wg := &sync.WaitGroup{}
 
-	usecase := usecase.NewUsecase(db, repo, log)
+	usecase := usecase.NewUsecase(db, repo, log, config)
 	handler := adaptor.NewHandler(usecase, log, config)
 	mw := mCustom.NewMiddlewareCustom(usecase, log)
 	ApiV1(r1, &handler, mw)
@@ -41,6 +41,10 @@ func Wiring(db *gorm.DB, repo *repository.Repository, log *zap.Logger, config ut
 }
 
 func ApiV1(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCustom) {
-	users := r.Group("/users")
-	users.GET("/", handler.UserHandler.GetUserList)
+	AuthRoute(r.Group("/auth"), handler, mw)
+}
+
+func AuthRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCustom) {
+	r.POST("/login", handler.AuthHandler.Login)
+	r.POST("/logout", mw.AuthMiddleware(), handler.AuthHandler.Logout)
 }

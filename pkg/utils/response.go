@@ -20,7 +20,7 @@ func ResponseSuccess(c *gin.Context, code int, message string, data any) {
 	c.JSON(code, response)
 }
 
-func ResponseBadRequest(c *gin.Context, code int, message string, errors any) {
+func ResponseFailed(c *gin.Context, code int, message string, errors any) {
 	response := Reponse{
 		Status:  false,
 		Message: message,
