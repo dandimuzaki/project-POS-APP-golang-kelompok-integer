@@ -10,31 +10,32 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
 type App struct {
-	Route *gin.Engine
-	Stop chan struct{}
-	WG *sync.WaitGroup
+	Route  *gin.Engine
+	Stop   chan struct{}
+	WG     *sync.WaitGroup
 	Config utils.Configuration
 }
 
-func Wiring(repo *repository.Repository, log *zap.Logger, config utils.Configuration) *App {
+func Wiring(db *gorm.DB, repo *repository.Repository, log *zap.Logger, config utils.Configuration) *App {
 	r := gin.Default()
 	r1 := r.Group("/api/v1")
 
 	stop := make(chan struct{})
 	wg := &sync.WaitGroup{}
 
-	usecase := usecase.NewUsecase(repo, log)
+	usecase := usecase.NewUsecase(db, repo, log)
 	handler := adaptor.NewHandler(usecase, log, config)
 	mw := mCustom.NewMiddlewareCustom(usecase, log)
 	ApiV1(r1, &handler, mw)
 
 	return &App{
-		Route: r,
-		Stop: stop,
-		WG: wg,
+		Route:  r,
+		Stop:   stop,
+		WG:     wg,
 		Config: config,
 	}
 }

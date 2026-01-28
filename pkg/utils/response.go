@@ -1,8 +1,6 @@
 package utils
 
 import (
-	"project-POS-APP-golang-integer/internal/dto"
-
 	"github.com/gin-gonic/gin"
 )
 
@@ -31,7 +29,7 @@ func ResponseBadRequest(c *gin.Context, code int, message string, errors any) {
 	c.JSON(code, response)
 }
 
-func ResponsePagination(c *gin.Context, code int, message string, data any, pagination dto.Pagination) {
+func ResponsePagination(c *gin.Context, code int, message string, data any, pagination interface{}) {
 	response := map[string]interface{}{
 		"status":     true,
 		"message":    message,

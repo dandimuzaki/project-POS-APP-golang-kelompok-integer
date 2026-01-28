@@ -16,6 +16,17 @@ const (
 	ReservationStatusCompleted ReservationStatus = "completed"
 )
 
+// IsValid checks if the reservation status is valid
+func (rs ReservationStatus) IsValid() bool {
+	switch rs {
+	case ReservationStatusAwaiting, ReservationStatusConfirmed,
+		ReservationStatusCancelled, ReservationStatusCompleted:
+		return true
+	default:
+		return false
+	}
+}
+
 type Reservation struct {
 	ID              uint              `gorm:"primaryKey" json:"id"`
 	CustomerID      uint              `gorm:"index;not null" json:"customer_id"`
