@@ -45,6 +45,7 @@ func Wiring(db *gorm.DB, repo *repository.Repository, log *zap.Logger, config ut
 func ApiV1(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCustom) {
 	AuthRoute(r.Group("/auth"), handler, mw)
 	UserRoute(r.Group("/users"), handler, mw)
+	ReservationRoute(r.Group("/reservations"), handler, mw)
 }
 
 func AuthRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCustom) {
@@ -54,4 +55,19 @@ func AuthRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.Middlewa
 
 func UserRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCustom) {
 	r.POST("/", handler.UserHandler.CreateUser)
+}
+
+func ReservationRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCustom) {
+	// Public routes
+	r.GET("/available-tables", handler.ReservationHandler.GetAvailableTables)
+
+	// Protected routes (need authentication)
+	r.Use(mw.AuthMiddleware())
+
+	r.POST("/", handler.ReservationHandler.CreateReservation)
+	r.GET("/", handler.ReservationHandler.GetReservations)
+	r.GET("/:id", handler.ReservationHandler.GetReservationByID)
+	r.PUT("/:id/status", handler.ReservationHandler.UpdateReservationStatus)
+	r.POST("/:id/cancel", handler.ReservationHandler.CancelReservation)
+	r.POST("/:id/checkin", handler.ReservationHandler.CheckIn)
 }
