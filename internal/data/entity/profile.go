@@ -6,7 +6,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type Staff struct {
+type Profile struct {
 	gorm.Model
 	UserID            uint      `gorm:"uniqueIndex;not null" json:"user_id"`
 	FullName          string    `gorm:"not null" json:"full_name"`
@@ -19,5 +19,5 @@ type Staff struct {
 
 	// Relations
 	User   User    `gorm:"foreignKey:UserID" json:"user,omitempty"`
-	Shifts []Shift `gorm:"foreignKey:StaffID" json:"shifts,omitempty"`
+	Shifts []Shift `gorm:"foreignKey:ProfileID" json:"shifts,omitempty"`
 }

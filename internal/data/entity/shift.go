@@ -6,7 +6,7 @@ import (
 
 type Shift struct {
 	ID         uint      `gorm:"primaryKey" json:"id"`
-	StaffID    uint      `gorm:"not null" json:"staff_id"`
+	ProfileID    uint      `gorm:"not null" json:"profile_id"`
 	WeekNumber int       `gorm:"not null" json:"week_number"`
 	ShiftStart time.Time `json:"shift_start"`
 	ShiftEnd   time.Time `json:"shift_end"`
@@ -15,5 +15,5 @@ type Shift struct {
 	UpdatedAt  time.Time `json:"updated_at"`
 
 	// Relations
-	Staff Staff `gorm:"foreignKey:StaffID" json:"staff,omitempty"`
+	Profile Profile `gorm:"foreignKey:ProfileID" json:"profile,omitempty"`
 }

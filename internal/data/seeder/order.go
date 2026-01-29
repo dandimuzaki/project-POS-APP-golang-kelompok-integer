@@ -15,5 +15,16 @@ func OrderSeeds() []entity.Order {
 			CreatedBy:     1, // superadmin / admin
 			Notes:         "Demo order",
 		},
+		{
+			OrderNumber:   "ORD-002",
+			TableID:       2,
+			Status:        entity.OrderStatusCompleted,
+			Subtotal:      50000,
+			TaxPercentage: 10,
+			TaxAmount:     5000,
+			Total:         55000,
+			CreatedBy:     1, // superadmin / admin
+			Notes:         "Demo order",
+		},
 	}
 }

@@ -2,6 +2,7 @@ package data
 
 import (
 	"fmt"
+	data "project-POS-APP-golang-integer/internal/data/seeder"
 	"reflect"
 
 	"gorm.io/gorm"
@@ -25,6 +26,21 @@ func SeedAll(db *gorm.DB) error {
 
 func dataSeeds() []interface{} {
 	return []interface{}{
-
+		data.UserSeeds(),
+		data.ProfileSeeds(),
+		data.ShiftSeeds(),
+		data.OTPSeeds(),
+		data.SessionSeeds(),
+		data.CategorySeeds(),
+		data.ProductSeeds(),
+		data.InventoryLogSeeds(),
+		data.TableSeeds(),
+		data.CustomerSeeds(),
+		data.OrderSeeds(),
+		data.OrderItemSeeds(),
+		data.ReservationSeeds(),
+		data.PaymentMethodSeeds(),
+		data.TransactionSeeds(),
+		data.NotificationSeeds(),
 	}
 }
