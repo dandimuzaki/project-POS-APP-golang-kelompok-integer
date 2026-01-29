@@ -30,6 +30,8 @@ func Wiring(db *gorm.DB, repo *repository.Repository, log *zap.Logger, config ut
 	usecase := usecase.NewUsecase(db, repo, log, config)
 	handler := adaptor.NewHandler(usecase, log, config)
 	mw := mCustom.NewMiddlewareCustom(usecase, log)
+
+	// Panggil ApiV1 dengan semua routes termasuk category
 	ApiV1(r1, &handler, mw)
 
 	return &App{
@@ -42,9 +44,27 @@ func Wiring(db *gorm.DB, repo *repository.Repository, log *zap.Logger, config ut
 
 func ApiV1(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCustom) {
 	AuthRoute(r.Group("/auth"), handler, mw)
+	CategoryRoute(r.Group("/categories"), handler, mw) // Tambah route category
+	// ... tambahkan route lainnya di sini
 }
 
 func AuthRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCustom) {
 	r.POST("/login", handler.AuthHandler.Login)
 	r.POST("/logout", mw.AuthMiddleware(), handler.AuthHandler.Logout)
+	// ... route auth lainnya
+}
+
+// CategoryRoute - Tambahkan route untuk category
+func CategoryRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCustom) {
+	// Public routes (tidak perlu auth)
+	r.GET("", handler.CategoryHandler.GetAllCategories)    // GET /api/v1/categories
+	r.GET("/:id", handler.CategoryHandler.GetCategoryByID) // GET /api/v1/categories/:id
+
+	// Protected routes (perlu auth)
+	protected := r.Group("")
+	protected.Use(mw.AuthMiddleware()) // Apply auth middleware
+
+	protected.POST("", handler.CategoryHandler.CreateCategory)       // POST /api/v1/categories
+	protected.PUT("/:id", handler.CategoryHandler.UpdateCategory)    // PUT /api/v1/categories/:id
+	protected.DELETE("/:id", handler.CategoryHandler.DeleteCategory) // DELETE /api/v1/categories/:id
 }

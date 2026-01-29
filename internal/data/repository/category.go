@@ -20,6 +20,9 @@ func NewCategoryRepository(db *gorm.DB) CategoryRepository {
 
 func (r *categoryRepository) FindAll() ([]entity.Category, error) {
 	var categories []entity.Category
-	err := r.db.Find(&categories).Error
+
+	// Filter hanya yang tidak soft deleted
+	err := r.db.Where("deleted_at IS NULL").Find(&categories).Error
+
 	return categories, err
 }

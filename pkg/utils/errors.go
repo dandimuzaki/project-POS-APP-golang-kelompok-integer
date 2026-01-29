@@ -13,6 +13,15 @@ var (
 	ErrInvalidStatusTransition = errors.New("invalid status transition")
 )
 
+// =============== ERROR CATEGORY ===============
+var (
+	ErrCategoryNotFound    = errors.New("category not found")
+	ErrCategoryExists      = errors.New("category name already exists")
+	ErrCategoryHasProducts = errors.New("cannot delete category with associated products")
+	ErrInvalidCategoryName = errors.New("category name is invalid")
+	ErrCategoryInactive    = errors.New("category is inactive")
+)
+
 // Helper untuk check business error
 func IsBusinessError(err error) bool {
 	switch err {
@@ -22,7 +31,12 @@ func IsBusinessError(err error) bool {
 		ErrTableNotFound,
 		ErrReservationNotFound,
 		ErrInsufficientCapacity,
-		ErrInvalidStatusTransition:
+		ErrInvalidStatusTransition,
+		ErrCategoryNotFound,
+		ErrCategoryExists,
+		ErrCategoryHasProducts,
+		ErrInvalidCategoryName,
+		ErrCategoryInactive:
 		return true
 	default:
 		return false
