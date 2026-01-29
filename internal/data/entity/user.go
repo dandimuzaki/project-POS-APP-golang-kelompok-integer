@@ -24,7 +24,7 @@ type User struct {
 	DeletedAt    gorm.DeletedAt `gorm:"index" json:"deleted_at,omitempty"`
 
 	// Relations
-	Staff         *Profile         `gorm:"foreignKey:UserID" json:"profile,omitempty"`
+	Profile         *Profile         `gorm:"foreignKey:UserID" json:"profile,omitempty"`
 	Sessions      []Session      `gorm:"foreignKey:UserID" json:"-"`
 	Orders        []Order        `gorm:"foreignKey:CreatedBy" json:"-"`
 	InventoryLogs []InventoryLog `gorm:"foreignKey:CreatedBy" json:"-"`

@@ -5,7 +5,7 @@ import (
 	"time"
 )
 
-func StaffSeeds() []entity.Profile{
+func ProfileSeeds() []entity.Profile{
 	return []entity.Profile{
 		{
 			UserID: 3,

@@ -19,5 +19,5 @@ type Profile struct {
 
 	// Relations
 	User   User    `gorm:"foreignKey:UserID" json:"user,omitempty"`
-	Shifts []Shift `gorm:"foreignKey:StaffID" json:"shifts,omitempty"`
+	Shifts []Shift `gorm:"foreignKey:ProfileID" json:"shifts,omitempty"`
 }

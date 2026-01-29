@@ -59,12 +59,7 @@ func (r *userRepository) GetUserList(ctx context.Context, f dto.UserFilterReques
 	query := db.Model(&entity.User{})
 
 	// Filter by role
-	switch f.Role {
-	case "admin":
-		query = query.Where("role = ?", f.Role)
-	case "staff":
-		query = query.Preload("Staff").Where("role = ?", f.Role)
-	}
+	query = query.Where("role = ?", f.Role)
 
 	// Get total user
 	if err := query.Count(&total).Error; err != nil {

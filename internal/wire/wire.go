@@ -44,9 +44,14 @@ func Wiring(db *gorm.DB, repo *repository.Repository, log *zap.Logger, config ut
 
 func ApiV1(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCustom) {
 	AuthRoute(r.Group("/auth"), handler, mw)
+	UserRoute(r.Group("/users"), handler, mw)
 }
 
 func AuthRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCustom) {
 	r.POST("/login", handler.AuthHandler.Login)
 	r.POST("/logout", mw.AuthMiddleware(), handler.AuthHandler.Logout)
+}
+
+func UserRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCustom) {
+	r.POST("/", handler.UserHandler.CreateUser)
 }

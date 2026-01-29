@@ -16,6 +16,7 @@ import (
 type UserService interface{
 	GetUserList(ctx context.Context, req dto.UserFilterRequest) ([]dto.UserResponse, dto.Pagination, error)
 	GetByID(ctx context.Context, id uint) (entity.User, error)
+	CreateUser(ctx context.Context, req request.UserRequest) (*response.UserResponse, error)
 }
 
 type userService struct {
@@ -85,6 +86,7 @@ func (s *userService) CreateUser(ctx context.Context, req request.UserRequest) (
 			return e
 		}
 		createdUser = result
+		profile.UserID = createdUser.ID
 
 		_, e = s.repo.ProfileRepo.CreateProfile(ctx, &profile)
 		if e != nil {
@@ -96,7 +98,7 @@ func (s *userService) CreateUser(ctx context.Context, req request.UserRequest) (
 
 	if err != nil {
 		s.log.Error("Error create user transaction", zap.Error(err))
-		return nil, nil
+		return nil, err
 	}
 
 	res := response.UserResponse{
