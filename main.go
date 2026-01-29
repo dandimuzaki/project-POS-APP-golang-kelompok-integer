@@ -36,6 +36,6 @@ func main() {
 	}
 
 	repo := repository.NewRepository(db, logger)
-	route := wire.Wiring(repo, logger, config)
+	route := wire.Wiring(db, repo, logger, config)
 	cmd.APiserver(route)
 }
