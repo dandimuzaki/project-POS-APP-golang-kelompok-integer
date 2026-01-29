@@ -21,8 +21,8 @@ func NewRepository(db *gorm.DB, log *zap.Logger) *Repository {
 		ProfileRepo: NewProfileRepo(db, log),
 		OTPRepo: NewOTPRepo(db, log),
 		SessionRepo: NewSessionRepo(db, log),
-		CustomerRepo:    NewCustomerRepository(db, log),
-		TableRepo:       NewTableRepository(db, log),
-		ReservationRepo: NewReservationRepository(db, log),
+		CustomerRepo:    NewCustomerRepo(db, log),
+		TableRepo:       NewTableRepo(db, log),
+		ReservationRepo: NewReservationRepo(db, log),
 	}
 }
