@@ -3,6 +3,7 @@ package wire
 import (
 	"project-POS-APP-golang-integer/internal/adaptor"
 	"project-POS-APP-golang-integer/internal/data/repository"
+	"project-POS-APP-golang-integer/internal/infra"
 	"project-POS-APP-golang-integer/internal/usecase"
 	mCustom "project-POS-APP-golang-integer/pkg/middleware"
 	"project-POS-APP-golang-integer/pkg/utils"
@@ -27,7 +28,8 @@ func Wiring(db *gorm.DB, repo *repository.Repository, log *zap.Logger, config ut
 	stop := make(chan struct{})
 	wg := &sync.WaitGroup{}
 
-	usecase := usecase.NewUsecase(db, repo, log, config)
+	tx := infra.NewGormTxManager(db)
+	usecase := usecase.NewUsecase(tx, db, repo, log, config)
 	handler := adaptor.NewHandler(usecase, log, config)
 	mw := mCustom.NewMiddlewareCustom(usecase, log)
 	ApiV1(r1, &handler, mw)

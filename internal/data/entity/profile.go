@@ -6,7 +6,7 @@ import (
 	"gorm.io/gorm"
 )
 
-type Staff struct {
+type Profile struct {
 	gorm.Model
 	UserID            uint      `gorm:"uniqueIndex;not null" json:"user_id"`
 	FullName          string    `gorm:"not null" json:"full_name"`

@@ -14,10 +14,10 @@ type Usecase struct {
 	ReservationService ReservationService
 }
 
-func NewUsecase(db *gorm.DB, repo *repository.Repository, log *zap.Logger, config utils.Configuration) *Usecase {
+func NewUsecase(tx TxManager, db *gorm.DB, repo *repository.Repository, log *zap.Logger, config utils.Configuration) *Usecase {
 	return &Usecase{
-		UserService:        NewUserService(repo, log),
-		AuthService: NewAuthService(db, repo, log, config),
+		UserService:        NewUserService(tx, repo, log),
+		AuthService: NewAuthService(tx, repo, log, config),
 		ReservationService: NewReservationService(db, repo, log),
 	}
 }

@@ -18,35 +18,22 @@ type AuthService interface {
 }
 
 type authService struct {
-	db *gorm.DB
+	tx TxManager
 	repo *repository.Repository
 	log *zap.Logger
-	Config utils.Configuration
+	config utils.Configuration
 }
 
-func NewAuthService(db *gorm.DB, repo *repository.Repository, log *zap.Logger, config utils.Configuration) AuthService {
+func NewAuthService(tx TxManager, repo *repository.Repository, log *zap.Logger, config utils.Configuration) AuthService {
 	return &authService{
-		db: db,
+		tx: tx,
 		repo: repo,
 		log: log,
-		Config: config,
+		config: config,
 	}
 }
 
 func (s *authService) Login(ctx context.Context, data dto.LoginRequest) (*dto.AuthResponse, error) {
-	tx := s.db.Begin()
-	if tx.Error != nil {
-		s.log.Error("Failed to begin transaction", zap.Error(tx.Error))
-		return nil, tx.Error
-	}
-
-	defer func() {
-		if r := recover(); r != nil {
-			tx.Rollback()
-			s.log.Error("Transaction panic, rolled back", zap.Any("panic", r))
-		}
-	}()
-
 	// Find user by email
 	user, err := s.repo.UserRepo.FindUserByEmail(ctx, data.Email)
 	if err == gorm.ErrRecordNotFound {
@@ -70,11 +57,6 @@ func (s *authService) Login(ctx context.Context, data dto.LoginRequest) (*dto.Au
 	if err != nil {
 		s.log.Error("Error create token: ", zap.Error(err))
 		return nil, errors.New("token error")
-	}
-
-	if err := tx.Commit().Error; err != nil {
-		s.log.Error("Failed to commit transaction", zap.Error(err))
-		return nil, err
 	}
 	
 	res := dto.AuthResponse{

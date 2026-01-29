@@ -7,7 +7,7 @@ import (
 	"time"
 )
 
-func GenerateTransactionID(length int) (string, error) {
+func GenerateRandomString(length int) (string, error) {
 	bytes := make([]byte, length)
 	_, err := rand.Read(bytes)
 	if err != nil {

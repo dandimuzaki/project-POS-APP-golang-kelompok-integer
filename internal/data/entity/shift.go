@@ -15,5 +15,5 @@ type Shift struct {
 	UpdatedAt  time.Time `json:"updated_at"`
 
 	// Relations
-	Staff Staff `gorm:"foreignKey:StaffID" json:"staff,omitempty"`
+	Profile Profile `gorm:"foreignKey:StaffID" json:"profile,omitempty"`
 }

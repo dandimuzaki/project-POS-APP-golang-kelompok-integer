@@ -5,8 +5,8 @@ import (
 	"time"
 )
 
-func StaffSeeds() []entity.Staff{
-	return []entity.Staff{
+func StaffSeeds() []entity.Profile{
+	return []entity.Profile{
 		{
 			UserID: 3,
 			FullName: "Rafli Nur Rahman",

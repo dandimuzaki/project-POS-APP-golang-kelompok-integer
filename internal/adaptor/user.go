@@ -25,8 +25,6 @@ func NewUserHandler(service *usecase.Usecase, log *zap.Logger, config utils.Conf
 }
 
 func (h *UserHandler) GetUserList(c *gin.Context) {
-	ctx := c.Request.Context()
-
 	role := c.Query("role")
 
 	// Construct DTO
@@ -34,7 +32,7 @@ func (h *UserHandler) GetUserList(c *gin.Context) {
 		Role: role,
 	}
 
-	result, pagination, err := h.service.UserService.GetUserList(ctx, req)
+	result, pagination, err := h.service.UserService.GetUserList(c, req)
 	if err != nil {
 		utils.ResponseFailed(c, http.StatusBadGateway, "", nil)
 		return

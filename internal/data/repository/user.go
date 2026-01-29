@@ -4,6 +4,7 @@ import (
 	"context"
 	"project-POS-APP-golang-integer/internal/data/entity"
 	"project-POS-APP-golang-integer/internal/dto"
+	"project-POS-APP-golang-integer/internal/infra"
 
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -31,25 +32,19 @@ func NewUserRepo(db *gorm.DB, log *zap.Logger) UserRepository {
 }
 
 func (r *userRepository) CreateUser(ctx context.Context, user *entity.User) (*entity.User, error) {
-	err := r.db.Create(&user).Error
+	db := infra.GetDB(ctx, r.db)
+	err := db.Create(&user).Error
 	if err != nil {
 		r.Logger.Error("Error query create user", zap.Error(err))
 		return nil, err
-	}
-	if user.Role == "staff" {
-		var staff entity.Staff
-		err = r.db.Create(&staff).Error
-		if err != nil {
-			r.Logger.Error("Error query create staff", zap.Error(err))
-			return nil, err
-		}
 	}
 	return user, err
 }
 
 func (r *userRepository) FindUserByEmail(ctx context.Context, email string) (*entity.User, error) {
+	db := infra.GetDB(ctx, r.db)
 	var user entity.User
-	query := r.db.WithContext(ctx).Model(&user).Where("email = ?", email).Limit(1)
+	query := db.WithContext(ctx).Model(&user).Where("email = ?", email).Limit(1)
 	err := query.Find(&user).Error
 	if err != nil {
 		return nil, err
@@ -58,9 +53,10 @@ func (r *userRepository) FindUserByEmail(ctx context.Context, email string) (*en
 }
 
 func (r *userRepository) GetUserList(ctx context.Context, f dto.UserFilterRequest) ([]entity.User, int64, error) {
+	db := infra.GetDB(ctx, r.db)
 	var users []entity.User
 	var total int64
-	query := r.db.Model(&entity.User{})
+	query := db.Model(&entity.User{})
 
 	// Filter by role
 	switch f.Role {
@@ -86,8 +82,9 @@ func (r *userRepository) GetUserList(ctx context.Context, f dto.UserFilterReques
 }
 
 func (r *userRepository) GetUserByID(ctx context.Context, id uint) (entity.User, error) {
+	db := infra.GetDB(ctx, r.db)
 	var user entity.User
-	query := r.db.Model(&user).Where("id = ?", id).Limit(1)
+	query := db.Model(&user).Where("id = ?", id).Limit(1)
 	err := query.Find(&user).Error
 	if err != nil {
 		r.Logger.Error("Error query get user by id", zap.Error(err))
@@ -97,7 +94,8 @@ func (r *userRepository) GetUserByID(ctx context.Context, id uint) (entity.User,
 }
 
 func (r *userRepository) UpdateUser(ctx context.Context, id uint, u *entity.User) error {
-	err := r.db.Save(u).Error
+	db := infra.GetDB(ctx, r.db)
+	err := db.Save(u).Error
 	if err != nil {
 		r.Logger.Error("Error query update user", zap.Error(err))
 		return err
@@ -106,7 +104,8 @@ func (r *userRepository) UpdateUser(ctx context.Context, id uint, u *entity.User
 }
 
 func (r *userRepository) DeleteUser(ctx context.Context, id uint) error {
-	err := r.db.Delete(&entity.User{}, id).Error
+	db := infra.GetDB(ctx, r.db)
+	err := db.Delete(&entity.User{}, id).Error
 	if err != nil {
 		r.Logger.Error("Error query delete user", zap.Error(err))
 		return err
