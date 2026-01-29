@@ -11,7 +11,8 @@ import (
 
 func SeedAll(db *gorm.DB) error {
 	return db.Transaction(func(tx *gorm.DB) error {
-		seeds := dataSeeds()
+		users := data.UserSeeds()
+		seeds := dataSeeds(tx, users)
 		for i := range seeds {
 			err := tx.Clauses(clause.OnConflict{DoNothing: true}).Create(seeds[i]).Error
 			if err != nil {
@@ -24,10 +25,10 @@ func SeedAll(db *gorm.DB) error {
 	})
 }
 
-func dataSeeds() []interface{} {
+func dataSeeds(tx *gorm.DB, users []entity.User) []interface{} {
 	return []interface{}{
-		data.UserSeeds(),
-		data.StaffSeeds(),
+		users,
+		data.StaffSeeds(tx, users),
 		data.ShiftSeeds(),
 		data.OTPSeeds(),
 		data.SessionSeeds(),
