@@ -6,12 +6,7 @@ type UserFilterRequest struct {
 	Role  string `form:"role"`
 }
 
-type CreateUserRequest struct {
-	Email string `json:"email" validate:"email"`
-	Role  string `json:"role"`
-}
-
-type LoginRequest struct {
-	Email    string `json:"email" validate:"email"`
-	Password string `json:"password"`
+type CategoryRequest struct {
+	Name        string `json:"name"`
+	Description string `json:"description"`
 }
