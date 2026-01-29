@@ -8,6 +8,7 @@ import (
 type Repository struct {
 	UserRepo        UserRepository
 	ProfileRepo ProfileRepository
+	OTPRepo OTPRepository
 	SessionRepo SessionRepository
 	CustomerRepo    CustomerRepository
 	TableRepo       TableRepository
@@ -18,6 +19,7 @@ func NewRepository(db *gorm.DB, log *zap.Logger) *Repository {
 	return &Repository{
 		UserRepo:        NewUserRepo(db, log),
 		ProfileRepo: NewProfileRepo(db, log),
+		OTPRepo: NewOTPRepo(db, log),
 		SessionRepo: NewSessionRepo(db, log),
 		CustomerRepo:    NewCustomerRepository(db, log),
 		TableRepo:       NewTableRepository(db, log),

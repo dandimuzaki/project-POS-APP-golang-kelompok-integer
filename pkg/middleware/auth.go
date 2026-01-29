@@ -28,7 +28,7 @@ func (mw *MiddlewareCustom) AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		user, err := mw.Usecase.UserService.GetByID(c, *userID)
+		user, err := mw.Usecase.UserService.GetUserByID(c, *userID)
 		if err != nil {
 			utils.ResponseFailed(c, http.StatusUnauthorized, "user not found", err)
 			c.Abort()

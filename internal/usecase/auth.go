@@ -3,18 +3,22 @@ package usecase
 import (
 	"context"
 	"errors"
+	"project-POS-APP-golang-integer/internal/data/entity"
 	"project-POS-APP-golang-integer/internal/data/repository"
-	"project-POS-APP-golang-integer/internal/dto"
+	"project-POS-APP-golang-integer/internal/dto/request"
+	"project-POS-APP-golang-integer/internal/dto/response"
 	"project-POS-APP-golang-integer/pkg/utils"
+	"time"
 
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
 type AuthService interface {
-	Login(ctx context.Context, data dto.LoginRequest) (*dto.AuthResponse, error)
+	Login(ctx context.Context, data request.LoginRequest) (*response.AuthResponse, error)
 	ValidateToken(ctx context.Context, token string) (*uint, error)
 	Logout(ctx context.Context, token string) error
+	RequestResetPassword(ctx context.Context, email string) (*response.OTPResponse, error)
 }
 
 type authService struct {
@@ -33,7 +37,7 @@ func NewAuthService(tx TxManager, repo *repository.Repository, log *zap.Logger, 
 	}
 }
 
-func (s *authService) Login(ctx context.Context, data dto.LoginRequest) (*dto.AuthResponse, error) {
+func (s *authService) Login(ctx context.Context, data request.LoginRequest) (*response.AuthResponse, error) {
 	// Find user by email
 	user, err := s.repo.UserRepo.FindUserByEmail(ctx, data.Email)
 	if err == gorm.ErrRecordNotFound {
@@ -59,7 +63,7 @@ func (s *authService) Login(ctx context.Context, data dto.LoginRequest) (*dto.Au
 		return nil, errors.New("token error")
 	}
 	
-	res := dto.AuthResponse{
+	res := response.AuthResponse{
 		Token: token,
 	}
 
@@ -83,5 +87,71 @@ func (s *authService) Logout(ctx context.Context, token string) error {
 		s.log.Error("Error logout service: ", zap.Error(err))
 		return err
 	}
+	return nil
+}
+
+func (s *authService) RequestResetPassword(ctx context.Context, email string) (*response.OTPResponse, error) {
+	// Find user by email
+	user, err := s.repo.UserRepo.FindUserByEmail(ctx, email)
+	if err != nil {
+		s.log.Error("Error find user by email", zap.Error(err))
+		return nil, err
+	}
+
+	// Generate OTP
+	otpCode, _ := utils.GenerateOTP(6)
+	otp := entity.OTP{
+		UserID: user.ID,
+		OTPCode: otpCode,
+		ExpiresAt: time.Now().Add(10 * time.Minute),
+	}
+	err = s.repo.OTPRepo.CreateOTP(ctx, otp)
+	if err != nil {
+		s.log.Error("Error create otp", zap.Error(err))
+		return nil, err
+	}
+
+	// Send email with OTP
+
+	res := response.OTPResponse{
+		OTPCode: otpCode,
+		ExpiresAt: otp.ExpiresAt,
+	}
+	
+	return &res, nil
+}
+
+func (s *authService) ResetPassword(ctx context.Context, req request.ResetPassword) error {
+	// Find user by email
+	user, err := s.repo.UserRepo.FindUserByEmail(ctx, req.Email)
+	if err != nil {
+		s.log.Error("Error find user by email", zap.Error(err))
+		return err
+	}
+
+	// Validate OTP
+	err = s.repo.OTPRepo.ValidateOTP(ctx, req.OTP)
+	if err != nil {
+		s.log.Error("Error validate OTP", zap.Error(err))
+		return err
+	}
+
+	// Hash password
+	user.PasswordHash = utils.HashPassword(req.NewPassword)
+
+	err = s.tx.WithinTx(ctx, func(ctx context.Context) error {
+		// Update user password
+		e := s.repo.UserRepo.UpdateUser(ctx, user.ID, user)
+		if e != nil {
+			return e
+		}
+		// Mark OTP as used
+		e = s.repo.OTPRepo.MarkOTP(ctx, req.OTP)
+		if e != nil {
+			return e
+		}
+		return nil
+	})
+
 	return nil
 }

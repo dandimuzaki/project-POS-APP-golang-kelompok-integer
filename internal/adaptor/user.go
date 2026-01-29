@@ -2,7 +2,6 @@ package adaptor
 
 import (
 	"net/http"
-	"project-POS-APP-golang-integer/internal/dto"
 	"project-POS-APP-golang-integer/internal/dto/request"
 	"project-POS-APP-golang-integer/internal/usecase"
 	"project-POS-APP-golang-integer/pkg/utils"
@@ -27,19 +26,30 @@ func NewUserHandler(service *usecase.Usecase, log *zap.Logger, config utils.Conf
 
 func (h *UserHandler) GetUserList(c *gin.Context) {
 	role := c.Query("role")
+	name := c.Query("name")
+	email := c.Query("email")
 
 	// Construct DTO
-	req := dto.UserFilterRequest{
+	req := request.UserFilterRequest{
 		Role: role,
+		Name: name,
+		Email: email,
 	}
 
-	result, pagination, err := h.service.UserService.GetUserList(c, req)
+	// Validation
+	messages, err := utils.ValidateErrors(req)
 	if err != nil {
-		utils.ResponseFailed(c, http.StatusBadGateway, "", nil)
+		utils.ResponseFailed(c, http.StatusBadRequest, err.Error(), messages)
 		return
 	}
 
-	utils.ResponsePagination(c, http.StatusOK, "success get data", result, pagination)
+	result, err := h.service.UserService.GetUserList(c, req)
+	if err != nil {
+		utils.ResponseFailed(c, http.StatusBadGateway, "get user list failed", nil)
+		return
+	}
+
+	utils.ResponseSuccess(c, http.StatusOK, "get user list success", result)
 }
 
 func (h *UserHandler) CreateUser(c *gin.Context) {
@@ -48,6 +58,8 @@ func (h *UserHandler) CreateUser(c *gin.Context) {
 		utils.ResponseFailed(c, http.StatusBadRequest, "invalid request", err)
 		return
 	}
+
+
 
 	res, err := h.service.UserService.CreateUser(c.Request.Context(), req)
 	if err != nil {

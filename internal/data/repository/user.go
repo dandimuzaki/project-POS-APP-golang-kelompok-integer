@@ -3,8 +3,8 @@ package repository
 import (
 	"context"
 	"project-POS-APP-golang-integer/internal/data/entity"
-	"project-POS-APP-golang-integer/internal/dto"
 	"project-POS-APP-golang-integer/internal/infra"
+	"strings"
 
 	"go.uber.org/zap"
 	"gorm.io/gorm"
@@ -13,7 +13,7 @@ import (
 type UserRepository interface {
 	CreateUser(ctx context.Context, user *entity.User) (*entity.User, error)
 	FindUserByEmail(ctx context.Context, email string) (*entity.User, error)
-	GetUserList(ctx context.Context, f dto.UserFilterRequest) ([]entity.User, int64, error)
+	GetUserList(ctx context.Context, f UserQueryParams) ([]entity.User, int64, error)
 	GetUserByID(ctx context.Context, id uint) (entity.User, error)
 	UpdateUser(ctx context.Context, id uint, data *entity.User) error
 	DeleteUser(ctx context.Context, id uint) error
@@ -29,6 +29,14 @@ func NewUserRepo(db *gorm.DB, log *zap.Logger) UserRepository {
 		db: db,
 		Logger: log,
 	}
+}
+
+type UserQueryParams struct {
+	Offset int
+	Limit int
+	Role entity.UserRole
+	Name string
+	Email string
 }
 
 func (r *userRepository) CreateUser(ctx context.Context, user *entity.User) (*entity.User, error) {
@@ -52,22 +60,36 @@ func (r *userRepository) FindUserByEmail(ctx context.Context, email string) (*en
 	return &user, err
 }
 
-func (r *userRepository) GetUserList(ctx context.Context, f dto.UserFilterRequest) ([]entity.User, int64, error) {
+func (r *userRepository) GetUserList(ctx context.Context, f UserQueryParams) ([]entity.User, int64, error) {
 	db := infra.GetDB(ctx, r.db)
 	var users []entity.User
 	var total int64
 	query := db.Model(&entity.User{})
 
 	// Filter by role
-	query = query.Where("role = ?", f.Role)
+	if f.Role != "" {
+		query = query.Where("role = ?", f.Role)
+	}
+	
+	// Search by name
+	if f.Name != "" {
+		searchPattern := "%" + strings.ToLower(f.Name) + "%"
+		query = query.Joins("JOIN profiles p ON p.user_id = users.id").
+			Where("LOWER(full_name) LIKE ?", searchPattern)
+	}
+
+	// Search by email
+	if f.Email != "" {
+		searchPattern := "%" + strings.ToLower(f.Email) + "%"
+		query = query.Where("LOWER(email) LIKE ?", searchPattern)
+	}
 
 	// Get total user
 	if err := query.Count(&total).Error; err != nil {
 		return nil, 0, err
 	}
 
-	offset := (f.Page - 1) * f.Limit
-	err := query.Limit(f.Limit).Offset(offset).Find(&users).Error
+	err := query.Limit(f.Limit).Offset(f.Offset).Find(&users).Error
 	if err != nil {
 		r.Logger.Error("Error query get user list", zap.Error(err))
 		return nil, 0, err
@@ -90,7 +112,9 @@ func (r *userRepository) GetUserByID(ctx context.Context, id uint) (entity.User,
 
 func (r *userRepository) UpdateUser(ctx context.Context, id uint, u *entity.User) error {
 	db := infra.GetDB(ctx, r.db)
-	err := db.Save(u).Error
+	err := db.Model(&entity.Profile{}).
+    Where("id = ?", u.ID).
+    Updates(u).Error
 	if err != nil {
 		r.Logger.Error("Error query update user", zap.Error(err))
 		return err

@@ -68,7 +68,7 @@ func (r *sessionRepository) Create(ctx context.Context, userID uint) (uuid.UUID,
 func (r *sessionRepository) ValidateToken(ctx context.Context, token string) (*uint, error) {
 	// Validate token to authorize user
 	var userID *uint
-	query := r.db.Model(&entity.Session{}).Select("user_id").Where("token = ?", token).Where("expired_at > NOW()").Where("revoked_at IS NULL")
+	query := r.db.Model(&entity.Session{}).Select("user_id").Where("token = ?", token).Where("expires_at > NOW()").Where("revoked_at IS NULL")
 	err := query.Find(&userID).Error
 	if err != nil {
 		r.Logger.Error("Error query validate token: ", zap.Error(err))
