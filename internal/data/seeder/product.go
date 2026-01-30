@@ -1,9 +1,26 @@
 package data
 
-import "project-POS-APP-golang-integer/internal/data/entity"
+import (
+	"fmt"
+	"project-POS-APP-golang-integer/internal/data/entity"
 
-func ProductSeeds() []entity.Product {
-	return []entity.Product{
+	"gorm.io/gorm"
+)
+
+func ProductSeeds(db *gorm.DB, c []entity.Category) ([]entity.Product, error) {
+	if len(c) < 2 {
+		return nil, fmt.Errorf("not enough categories to seed products")
+	}
+
+	var products []entity.Product
+	var count int64
+	db.Model(&entity.Product{}).Count(&count)
+	if count > 0 {
+		db.Find(&products)
+		return products, nil
+	}
+	
+	products = []entity.Product{
 		{
 			Name:        "Espresso",
 			Description: "Kopi hitam pekat tanpa gula",
@@ -12,7 +29,7 @@ func ProductSeeds() []entity.Product {
 			MinStock:    10,
 			Status:      entity.ProductStatusActive,
 			ImageURL:    "https://cdn.posapp.com/products/espresso.jpg",
-			CategoryID:  1, // Coffee
+			CategoryID:  c[0].ID, // Coffee
 		},
 		{
 			Name:        "Cappuccino",
@@ -22,7 +39,7 @@ func ProductSeeds() []entity.Product {
 			MinStock:    10,
 			Status:      entity.ProductStatusActive,
 			ImageURL:    "https://cdn.posapp.com/products/cappuccino.jpg",
-			CategoryID:  1, // Coffee
+			CategoryID:  c[0].ID, // Coffee
 		},
 		{
 			Name:        "Matcha Latte",
@@ -32,7 +49,13 @@ func ProductSeeds() []entity.Product {
 			MinStock:    10,
 			Status:      entity.ProductStatusActive,
 			ImageURL:    "https://cdn.posapp.com/products/matcha.jpg",
-			CategoryID:  2, // Non Coffee
+			CategoryID:  c[1].ID, // Non Coffee
 		},
 	}
+
+	if err := db.Create(&products).Error; err != nil {
+		return nil, err
+	}
+
+	return products, nil
 }

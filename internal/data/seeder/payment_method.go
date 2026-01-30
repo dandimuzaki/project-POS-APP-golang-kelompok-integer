@@ -3,24 +3,41 @@ package data
 import (
 	"project-POS-APP-golang-integer/internal/data/entity"
 	"time"
+
+	"gorm.io/gorm"
 )
 
-func PaymentMethodSeeds() []entity.PaymentMethod{
-	return []entity.PaymentMethod{
+func PaymentMethodSeeds(db *gorm.DB) ([]entity.PaymentMethod, error) {
+	var count int64
+	db.Model(&entity.PaymentMethod{}).Count(&count)
+
+	var pMethods []entity.PaymentMethod
+	if count > 0 {
+		db.Find(&pMethods)
+		return pMethods, nil
+	}
+
+	pMethods = []entity.PaymentMethod{
 		{
-			Name: "Gopay",
+			Name: "Cash",
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
 		},
 		{
-			Name: "OVO",
+			Name: "Debit Card",
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
 		},
 		{
-			Name: "BCA",
+			Name: "E-Wallet",
 			CreatedAt: time.Now(),
 			UpdatedAt: time.Now(),
 		},
 	}
+
+	if err := db.Create(&pMethods).Error; err != nil {
+		return nil, err
+	}
+
+	return pMethods, nil
 }

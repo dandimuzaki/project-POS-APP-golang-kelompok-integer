@@ -11,7 +11,7 @@ type Profile struct {
 	UserID            uint      `gorm:"uniqueIndex;not null" json:"user_id"`
 	FullName          string    `gorm:"not null" json:"full_name"`
 	Phone             string    `json:"phone"`
-	DateOfBirth       *time.Time `json:"date_of_birth"`
+	DateOfBirth       time.Time `json:"date_of_birth"`
 	Salary            float64   `json:"salary"`
 	ProfileImageURL   string    `json:"profile_image_url"`
 	Address           string    `json:"address"`

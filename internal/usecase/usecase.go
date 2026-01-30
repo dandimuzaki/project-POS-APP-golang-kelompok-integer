@@ -11,28 +11,19 @@ import (
 type Usecase struct {
 	UserService        UserService
 	AuthService        AuthService
-<<<<<<< HEAD
 	ReservationService ReservationService
 	CategoryService    CategoryService
-=======
 	ProfileService ProfileService
 	ReservationService ReservationService
 	InventoryLogService InventoryLogService
->>>>>>> main
 }
 
 func NewUsecase(tx TxManager, db *gorm.DB, repo *repository.Repository, log *zap.Logger, config utils.Configuration) *Usecase {
 	return &Usecase{
-<<<<<<< HEAD
-		UserService:        NewUserService(repo, log),
-		AuthService:        NewAuthService(db, repo, log, config),
-		ReservationService: NewReservationService(db, repo, log),
-=======
 		UserService:        NewUserService(tx, repo, log),
 		AuthService:        NewAuthService(tx, repo, log, config),
 		ProfileService: NewProfileService(tx, repo, log),
 		ReservationService: NewReservationService(tx, repo, log),
 		InventoryLogService: NewInventoryLogService(tx, repo, log),
->>>>>>> main
 	}
 }

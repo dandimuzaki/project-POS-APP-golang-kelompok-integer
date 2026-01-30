@@ -1,9 +1,22 @@
 package data
 
-import "project-POS-APP-golang-integer/internal/data/entity"
+import (
+	"project-POS-APP-golang-integer/internal/data/entity"
 
-func TableSeeds() []entity.Table {
-	return []entity.Table{
+	"gorm.io/gorm"
+)
+
+func TableSeeds (db *gorm.DB) ([]entity.Table, error) {
+	var count int64
+	db.Model(&entity.Table{}).Count(&count)
+
+	var tables []entity.Table
+	if count > 0 {
+		db.Find(&tables)
+		return tables, nil
+	}
+
+	tables = []entity.Table{
 		{
 			TableNumber: "T01",
 			Capacity:    2,
@@ -30,4 +43,10 @@ func TableSeeds() []entity.Table {
 			Status:      entity.TableStatusAvailable,
 		},
 	}
+
+	if err := db.Create(&tables).Error; err != nil {
+		return nil, err
+	}
+
+	return tables, nil
 }

@@ -1,0 +1,85 @@
+{
+  "info": {
+    "_postman_id": "bbcd1101-a157-4635-862b-764715cbf6e4",
+    "name": "POS Integer",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "item": [
+    {
+      "name": "Auth",
+      "item": [
+        {
+          "name": "Login",
+          "id": "127f213c-0ea9-489b-936d-d12f2be6b73a",
+          "request": {
+            "method": "POST",
+            "header": [],
+            "body": {
+              "mode": "raw",
+              "raw": "{\r\n    \"email\": \"integer.lumoshive@gmail.com\",\r\n    \"password\": \"password123\"\r\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "http://localhost:8080/api/v1/auth/login",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "v1",
+                "auth",
+                "login"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "id": "3e42978a-a137-49db-a52d-6cab6b0e7620"
+    },
+    {
+      "name": "Inventory Log",
+      "item": [
+        {
+          "name": "Get Inventory Logs",
+          "id": "bab9a89b-cc80-4d3c-9365-c52ed7062178",
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "http://localhost:8080/api/v1/inventories",
+              "protocol": "http",
+              "host": [
+                "localhost"
+              ],
+              "port": "8080",
+              "path": [
+                "api",
+                "v1",
+                "inventories"
+              ]
+            }
+          },
+          "response": []
+        }
+      ],
+      "id": "9b94c44d-3c13-41ac-b1a4-e3f6ac16893e"
+    }
+  ],
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "13319f56-ec9b-b36d-2fe9-90db9cfd3851",
+        "type": "string"
+      }
+    ]
+  }
+}

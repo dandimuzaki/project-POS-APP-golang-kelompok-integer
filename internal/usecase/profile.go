@@ -37,10 +37,6 @@ func (s *profileService) GetProfile(ctx context.Context) (*response.ProfileRespo
 		s.log.Error("Error get profile", zap.Error(err))
 		return nil, err
 	}
-	var birthday string
-	if profile.Profile != nil && profile.Profile.DateOfBirth != nil {
-		birthday = profile.Profile.DateOfBirth.Format("2 January 2006")
-	}
 
 	res := response.ProfileResponse{
 		Email: profile.Email,
@@ -48,6 +44,8 @@ func (s *profileService) GetProfile(ctx context.Context) (*response.ProfileRespo
 	}
 
 	if profile.Profile != nil {
+		birthday := profile.Profile.DateOfBirth.Format("2 January 2006")
+
 		res.FullName = profile.Profile.FullName
 		res.Phone = profile.Profile.Phone
 		res.DateOfBirth = birthday
@@ -67,7 +65,7 @@ func (s *profileService) UpdateProfile(ctx context.Context, data *request.Profil
 		UserID: userID,
 		FullName: data.FullName,
 		Phone: data.Phone,
-		DateOfBirth: &birthday,
+		DateOfBirth: birthday,
 		Salary: data.Salary,
 		ProfileImageURL: data.ProfileImageURL,
 		Address: data.Address,

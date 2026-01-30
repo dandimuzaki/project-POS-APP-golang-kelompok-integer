@@ -1,7 +1,6 @@
 package data
 
 import (
-<<<<<<< HEAD:internal/data/seeder/staff.go
 	"fmt"
 	"time"
 
@@ -10,18 +9,19 @@ import (
 	"gorm.io/gorm"
 )
 
-func StaffSeeds(db *gorm.DB, users []entity.User) error {
+func ProfileSeeds(db *gorm.DB, users []entity.User) ([]entity.Profile, error) {
 	if len(users) < 3 {
-		return fmt.Errorf("not enough users to seed staff")
+		return nil, fmt.Errorf("not enough users to seed profile")
 	}
 
+	var profiles []entity.Profile
 	var count int64
-	db.Model(&entity.Staff{}).Count(&count)
 	if count > 0 {
-		return nil
+		db.Find(&profiles)
+		return profiles, nil
 	}
 
-	staffs := []entity.Staff{
+	profiles = []entity.Profile{
 		{
 			UserID:            users[0].ID,
 			FullName:          "Super Admin",
@@ -48,34 +48,12 @@ func StaffSeeds(db *gorm.DB, users []entity.User) error {
 			Salary:            7_500_000,
 			Address:           "Jakarta",
 			AdditionalDetails: "Senior Waitress",
-=======
-	"project-POS-APP-golang-integer/internal/data/entity"
-)
-
-func ProfileSeeds() []entity.Profile{
-	return []entity.Profile{
-		{
-			UserID: 3,
-			FullName: "Rafli Nur Rahman",
-			Phone: "087876544692",
-			DateOfBirth: nil,
-			Salary: 15000000,
-			ProfileImageURL: "",
-			Address: "Jl. Soekarno-Hatta, Tangerang, Banten",
-			AdditionalDetails: "",
-		},
-		{
-			UserID: 4,
-			FullName: "Dandi Muhamad Zaki",
-			Phone: "085117388153",
-			DateOfBirth: nil,
-			Salary: 15000000,
-			ProfileImageURL: "",
-			Address: "Jl. Gunung Batu, Bandung, Jawa Barat",
-			AdditionalDetails: "",
->>>>>>> main:internal/data/seeder/profile.go
 		},
 	}
 
-	return db.Create(&staffs).Error
+	if err := db.Create(&profiles).Error; err != nil {
+		return nil, err
+	}
+
+	return profiles, nil
 }
