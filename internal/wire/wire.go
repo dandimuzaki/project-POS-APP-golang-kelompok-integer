@@ -50,6 +50,7 @@ func ApiV1(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCu
 	ProfileRoute(r.Group("/profile"), handler, mw)
 	ReservationRoute(r.Group("/reservations"), handler, mw)
 	InventoryRoute(r.Group("/inventories"), handler, mw)
+	CategoryRoute(r.Group("/categories"), handler, mw)
 }
 
 func AuthRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCustom) {
@@ -92,15 +93,16 @@ func InventoryRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.Mid
 }
 
 func CategoryRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCustom) {
-	r.GET("/", mw.AuthMiddleware(), handler.CategoryHandler.GetCategories)
-	r.GET("/:id", mw.AuthMiddleware(), handler.CategoryHandler.GetCategoryByID)
-	r.POST("/", mw.AuthMiddleware(), mw.RequireAdminPermission(), handler.CategoryHandler.CreateCategory)
-
-	// Protected routes dengan auth DAN permission
+	// 🔥 PUBLIC ROUTES - tidak perlu auth
+	r.GET("", handler.CategoryHandler.GetAllCategories)    // GET /api/v1/categories
+	r.GET("/:id", handler.CategoryHandler.GetCategoryByID) // GET /api/v1/categories/:id
+	// 🔥 PROTECTED ROUTES - perlu auth DAN admin permission
 	protected := r.Group("")
-	protected.Use(mw.AuthMiddleware(), mw.AdminPermissionMiddleware()) // 🔥 TAMBAH INI
-
-	protected.POST("", handler.CategoryHandler.CreateCategory)
-	protected.PUT("/:id", handler.CategoryHandler.UpdateCategory)
-	protected.DELETE("/:id", handler.CategoryHandler.DeleteCategory)
+	protected.Use(
+		mw.AuthMiddleware(),
+		mw.RequirePermission("admin", "superadmin"), // 🔥 GUNAKAN middleware yang ADA
+	)
+	protected.POST("", handler.CategoryHandler.CreateCategory)       // POST /api/v1/categories
+	protected.PUT("/:id", handler.CategoryHandler.UpdateCategory)    // PUT /api/v1/categories/:id
+	protected.DELETE("/:id", handler.CategoryHandler.DeleteCategory) // DELETE /api/v1/categories/:id
 }
