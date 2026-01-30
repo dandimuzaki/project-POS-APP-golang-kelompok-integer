@@ -32,6 +32,8 @@ func Wiring(db *gorm.DB, repo *repository.Repository, log *zap.Logger, config ut
 	usecase := usecase.NewUsecase(tx, db, repo, log, config)
 	handler := adaptor.NewHandler(usecase, log, config)
 	mw := mCustom.NewMiddlewareCustom(usecase, log)
+
+	// Panggil ApiV1 dengan semua routes termasuk category
 	ApiV1(r1, &handler, mw)
 
 	return &App{
@@ -87,4 +89,18 @@ func ReservationRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.M
 func InventoryRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCustom) {
 	r.GET("/", mw.AuthMiddleware(), handler.InventoryLogHandler.GetInventoryLogs)
 	r.POST("/", mw.AuthMiddleware(), handler.InventoryLogHandler.CreateInventoryLog)
+}
+
+func CategoryRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCustom) {
+	r.GET("/", mw.AuthMiddleware(), handler.CategoryHandler.GetCategories)
+	r.GET("/:id", mw.AuthMiddleware(), handler.CategoryHandler.GetCategoryByID)
+	r.POST("/", mw.AuthMiddleware(), mw.RequireAdminPermission(), handler.CategoryHandler.CreateCategory)
+
+	// Protected routes dengan auth DAN permission
+	protected := r.Group("")
+	protected.Use(mw.AuthMiddleware(), mw.AdminPermissionMiddleware()) // 🔥 TAMBAH INI
+
+	protected.POST("", handler.CategoryHandler.CreateCategory)
+	protected.PUT("/:id", handler.CategoryHandler.UpdateCategory)
+	protected.DELETE("/:id", handler.CategoryHandler.DeleteCategory)
 }
