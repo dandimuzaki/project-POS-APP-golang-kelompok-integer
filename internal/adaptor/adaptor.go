@@ -10,13 +10,17 @@ import (
 type Handler struct {
 	UserHandler        UserHandler
 	AuthHandler        AuthHandler
+	ProfileHandler ProfileHandler
 	ReservationHandler ReservationHandler
+	InventoryLogHandler InventoryLogHandler
 }
 
 func NewHandler(u *usecase.Usecase, log *zap.Logger, config utils.Configuration) Handler {
 	return Handler{
-		UserHandler:        NewUserHandler(u, log, config),
-		AuthHandler:        NewAuthHandler(u, log, config),
+		UserHandler:        NewUserHandler(u.UserService, log, config),
+		AuthHandler:        NewAuthHandler(u.AuthService, log, config),
+		ProfileHandler: NewProfileHandler(u.ProfileService, log, config),
 		ReservationHandler: NewReservationHandler(u.ReservationService, log, config),
+		InventoryLogHandler: NewInventoryLogHandler(u.InventoryLogService, log, config),
 	}
 }

@@ -49,11 +49,11 @@ func (r *profileRepository) CreateProfile(ctx context.Context, profile *entity.P
 	return profile, err
 }
 
-func (r *profileRepository) UpdateProfile(ctx context.Context, u *entity.Profile) error {
+func (r *profileRepository) UpdateProfile(ctx context.Context, p *entity.Profile) error {
 	db := infra.GetDB(ctx, r.db)
 	err := db.Model(&entity.Profile{}).
-    Where("id = ?", u.ID).
-    Updates(u).Error
+    Where("user_id = ?", p.UserID).
+    Updates(p).Error
 	if err != nil {
 		r.Logger.Error("Error query update profile", zap.Error(err))
 		return err

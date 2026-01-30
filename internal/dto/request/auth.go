@@ -5,6 +5,10 @@ type LoginRequest struct {
 	Password string `json:"password"`
 }
 
+type ResetPasswordRequest struct {
+	Email string `json:"email" validate:"email"`
+}
+
 type ResetPassword struct {
 	Email       string `json:"email" validate:"email"`
 	NewPassword string `json:"new_password"`

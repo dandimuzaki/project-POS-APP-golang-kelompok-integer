@@ -19,6 +19,7 @@ type AuthService interface {
 	ValidateToken(ctx context.Context, token string) (*uint, error)
 	Logout(ctx context.Context, token string) error
 	RequestResetPassword(ctx context.Context, email string) (*response.OTPResponse, error)
+	ResetPassword(ctx context.Context, req request.ResetPassword) error
 }
 
 type authService struct {

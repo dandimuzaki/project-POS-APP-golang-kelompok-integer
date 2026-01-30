@@ -1,8 +1,6 @@
 package request
 
 type ProfileRequest struct {
-	Email             string  `json:"email" validate:"email"`
-	Role              string  `json:"role"`
 	FullName          string  `gorm:"not null" json:"full_name"`
 	Phone             string  `json:"phone"`
 	DateOfBirth       string  `json:"date_of_birth"`

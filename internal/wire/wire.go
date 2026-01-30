@@ -45,16 +45,28 @@ func Wiring(db *gorm.DB, repo *repository.Repository, log *zap.Logger, config ut
 func ApiV1(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCustom) {
 	AuthRoute(r.Group("/auth"), handler, mw)
 	UserRoute(r.Group("/users"), handler, mw)
+	ProfileRoute(r.Group("/profile"), handler, mw)
 	ReservationRoute(r.Group("/reservations"), handler, mw)
+	InventoryRoute(r.Group("/inventories"), handler, mw)
 }
 
 func AuthRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCustom) {
 	r.POST("/login", handler.AuthHandler.Login)
 	r.POST("/logout", mw.AuthMiddleware(), handler.AuthHandler.Logout)
+	r.POST("/request-reset-password", mw.AuthMiddleware(), handler.AuthHandler.RequestResetPassword)
+	r.POST("/reset-password", mw.AuthMiddleware(), handler.AuthHandler.ResetPassword)
 }
 
 func UserRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCustom) {
-	r.POST("/", handler.UserHandler.CreateUser)
+	r.GET("/", mw.AuthMiddleware(), mw.RequirePermission("superadmin", "admin"), handler.UserHandler.GetUserList)
+	r.POST("/", mw.AuthMiddleware(), mw.RequirePermission("superadmin", "admin"), handler.UserHandler.CreateUser)
+	r.PUT("/:id", mw.AuthMiddleware(), mw.RequirePermission("superadmin", "admin"), handler.UserHandler.UpdateRole)
+	r.DELETE("/:id", mw.AuthMiddleware(), mw.RequirePermission("superadmin", "admin"), handler.UserHandler.DeleteUser)
+}
+
+func ProfileRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCustom) {
+	r.GET("/", mw.AuthMiddleware(), handler.ProfileHandler.GetProfile)
+	r.PUT("/", mw.AuthMiddleware(), handler.ProfileHandler.UpdateProfile)
 }
 
 func ReservationRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCustom) {
@@ -70,4 +82,9 @@ func ReservationRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.M
 	r.PUT("/:id/status", handler.ReservationHandler.UpdateReservationStatus)
 	r.POST("/:id/cancel", handler.ReservationHandler.CancelReservation)
 	r.POST("/:id/checkin", handler.ReservationHandler.CheckIn)
+}
+
+func InventoryRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCustom) {
+	r.GET("/", mw.AuthMiddleware(), handler.InventoryLogHandler.GetInventoryLogs)
+	r.POST("/", mw.AuthMiddleware(), handler.InventoryLogHandler.CreateInventoryLog)
 }

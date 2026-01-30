@@ -41,7 +41,7 @@ func (r *otpRepository) CreateOTP(ctx context.Context, otp entity.OTP) error {
 func (r *otpRepository) ValidateOTP(ctx context.Context, otpCode string) error {
 	var otp entity.OTP
 	// Validate otp to proceed request
-	query := r.db.Model(&otp).Where("otp_code = ?", otp).Where("expires_at > NOW()").Where("is_used IS false").Limit(1)
+	query := r.db.Model(&otp).Where("otp_code = ? AND expires_at > NOW() AND is_used IS false", otp).Limit(1)
 	err := query.Find(&otp).Error
 	if err != nil {
 		r.Logger.Error("Error query validate otp: ", zap.Error(err))

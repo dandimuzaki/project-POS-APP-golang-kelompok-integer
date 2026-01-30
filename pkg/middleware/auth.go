@@ -35,7 +35,7 @@ func (mw *MiddlewareCustom) AuthMiddleware() gin.HandlerFunc {
 			return
 		}
 
-		c.Set("user_id", userID)
+		c.Set("user_id", user.ID)
 		c.Set("user_role", entity.UserRole(user.Role))
 		c.Next()
 	}
@@ -71,5 +71,6 @@ func (mw *MiddlewareCustom) RequirePermission(roles ...entity.UserRole) gin.Hand
 			errors.New("insufficient permission"),
 		)
 		c.Abort()
+		c.Next()
 	}
 }
