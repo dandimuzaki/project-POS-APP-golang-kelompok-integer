@@ -2,7 +2,6 @@ package response
 
 import "time"
 
-// CategoryResponse for list categories
 type CategoryResponse struct {
 	ID          uint      `json:"id"`
 	Name        string    `json:"name"`
@@ -12,26 +11,7 @@ type CategoryResponse struct {
 	UpdatedAt   time.Time `json:"updated_at"`
 }
 
-// SuccessResponse structure
-type SuccessResponse struct {
-	Status  string      `json:"status"`
-	Message string      `json:"message"`
-	Data    interface{} `json:"data"`
-}
-
-// ErrorResponse structure
-type ErrorResponse struct {
-	Status  string `json:"status"`
-	Message string `json:"message"`
-}
-
-// PaginationResponse (Optional)
-type PaginationResponse struct {
-	Status     string      `json:"status"`
-	Message    string      `json:"message"`
-	Data       interface{} `json:"data"`
-	Page       int         `json:"page"`
-	Limit      int         `json:"limit"`
-	TotalItems int64       `json:"total_items"`
-	TotalPages int         `json:"total_pages"`
+type CategoryListResponse struct {
+	Data       []CategoryResponse `json:"data"`
+	Pagination PaginationMeta     `json:"pagination"`
 }
