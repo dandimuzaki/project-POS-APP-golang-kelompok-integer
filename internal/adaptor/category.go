@@ -106,9 +106,12 @@ func (ch *CategoryHandler) GetAllCategories(c *gin.Context) {
 func (ch *CategoryHandler) GetCategoryByID(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
-	if err != nil {
-		ch.log.Warn("Invalid category ID", zap.String("id", idStr), zap.Error(err))
-		utils.ResponseFailed(c, 400, "Invalid category ID", nil)
+	if err != nil || id == 0 {
+		ch.log.Warn("Invalid category ID",
+			zap.String("id", idStr),
+			zap.Error(err),
+			zap.String("error_type", "invalid_id_format"))
+		utils.ResponseFailed(c, 400, "Invalid category ID. Must be a positive integer", nil)
 		return
 	}
 
@@ -196,22 +199,38 @@ func (ch *CategoryHandler) CreateCategory(c *gin.Context) {
 func (ch *CategoryHandler) UpdateCategory(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
-	if err != nil {
-		ch.log.Warn("Invalid category ID", zap.String("id", idStr), zap.Error(err))
-		utils.ResponseFailed(c, 400, "Invalid category ID", nil)
+	if err != nil || id == 0 { // 🔥 Tambah || id == 0
+		ch.log.Warn("Invalid category ID",
+			zap.String("id", idStr),
+			zap.Error(err),
+			zap.String("error_type", "invalid_id_format"))
+		utils.ResponseFailed(c, 400, "Invalid category ID. Must be a positive integer", nil)
 		return
 	}
 
 	var req request.UpdateCategoryRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
-		ch.log.Warn("Failed to bind request body", zap.Error(err))
+		ch.log.Warn("Failed to bind request body",
+			zap.Error(err),
+			zap.String("client_ip", c.ClientIP())) // 🔥 Optional: tambah client IP
 		utils.ResponseFailed(c, 400, "Invalid request body", err.Error())
+		return
+	}
+
+	// 🔥 Check if no changes provided (di handler)
+	if req.Name == "" && req.IconURL == "" && req.Description == "" {
+		ch.log.Warn("No changes provided for update",
+			zap.Uint("id", uint(id)),
+			zap.String("client_ip", c.ClientIP()))
+		utils.ResponseFailed(c, 400, "No changes provided", nil)
 		return
 	}
 
 	// Validate
 	if validationErrors, err := utils.ValidateErrors(req); err != nil {
-		ch.log.Warn("Request validation failed", zap.Any("errors", validationErrors))
+		ch.log.Warn("Request validation failed",
+			zap.Any("errors", validationErrors),
+			zap.String("client_ip", c.ClientIP()))
 		utils.ResponseFailed(c, 400, "Validation failed", validationErrors)
 		return
 	}
@@ -221,10 +240,16 @@ func (ch *CategoryHandler) UpdateCategory(c *gin.Context) {
 	if err != nil {
 		ch.log.Error("Failed to update category",
 			zap.Uint("id", uint(id)),
-			zap.Error(err))
+			zap.Any("request", req), // 🔥 Log request juga
+			zap.Error(err),
+			zap.String("client_ip", c.ClientIP()))
 
+		// 🔥 SATU error handling block saja
 		if err == utils.ErrCategoryNotFound {
 			utils.ResponseFailed(c, 404, "Category not found", nil)
+		} else if err.Error() == "no changes provided" {
+			// Ini bisa dari service jika validasi di service
+			utils.ResponseFailed(c, 400, "No changes provided", nil)
 		} else if utils.IsBusinessError(err) {
 			utils.ResponseFailed(c, 400, err.Error(), nil)
 		} else {
@@ -234,7 +259,9 @@ func (ch *CategoryHandler) UpdateCategory(c *gin.Context) {
 	}
 
 	ch.log.Info("Category updated successfully",
-		zap.Uint("id", uint(id)))
+		zap.Uint("id", uint(id)),
+		zap.String("new_name", category.Name), // 🔥 Log field yang di-update
+		zap.String("client_ip", c.ClientIP()))
 
 	// Success Response (200 OK)
 	utils.ResponseSuccess(c, 200, "Category updated successfully", category)
@@ -255,8 +282,10 @@ func (ch *CategoryHandler) UpdateCategory(c *gin.Context) {
 func (ch *CategoryHandler) DeleteCategory(c *gin.Context) {
 	idStr := c.Param("id")
 	id, err := strconv.ParseUint(idStr, 10, 32)
-	if err != nil {
-		ch.log.Warn("Invalid category ID", zap.String("id", idStr), zap.Error(err))
+	if err != nil || id == 0 { // 🔥 Tambah || id == 0
+		ch.log.Warn("Invalid category ID",
+			zap.String("id", idStr),
+			zap.Error(err))
 		utils.ResponseFailed(c, 400, "Invalid category ID", nil)
 		return
 	}

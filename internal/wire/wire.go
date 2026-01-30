@@ -46,41 +46,17 @@ func Wiring(db *gorm.DB, repo *repository.Repository, log *zap.Logger, config ut
 
 func ApiV1(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCustom) {
 	AuthRoute(r.Group("/auth"), handler, mw)
-<<<<<<< HEAD
-	CategoryRoute(r.Group("/categories"), handler, mw) // Tambah route category
-	// ... tambahkan route lainnya di sini
-=======
 	UserRoute(r.Group("/users"), handler, mw)
 	ProfileRoute(r.Group("/profile"), handler, mw)
 	ReservationRoute(r.Group("/reservations"), handler, mw)
 	InventoryRoute(r.Group("/inventories"), handler, mw)
->>>>>>> main
 }
 
 func AuthRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCustom) {
 	r.POST("/login", handler.AuthHandler.Login)
 	r.POST("/logout", mw.AuthMiddleware(), handler.AuthHandler.Logout)
-<<<<<<< HEAD
-	// ... route auth lainnya
-}
-
-// CategoryRoute - Tambahkan route untuk category
-func CategoryRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCustom) {
-	// Public routes (tidak perlu auth)
-	r.GET("", handler.CategoryHandler.GetAllCategories)    // GET /api/v1/categories
-	r.GET("/:id", handler.CategoryHandler.GetCategoryByID) // GET /api/v1/categories/:id
-
-	// Protected routes (perlu auth)
-	protected := r.Group("")
-	protected.Use(mw.AuthMiddleware()) // Apply auth middleware
-
-	protected.POST("", handler.CategoryHandler.CreateCategory)       // POST /api/v1/categories
-	protected.PUT("/:id", handler.CategoryHandler.UpdateCategory)    // PUT /api/v1/categories/:id
-	protected.DELETE("/:id", handler.CategoryHandler.DeleteCategory) // DELETE /api/v1/categories/:id
-=======
 	r.POST("/request-reset-password", mw.AuthMiddleware(), handler.AuthHandler.RequestResetPassword)
 	r.POST("/reset-password", mw.AuthMiddleware(), handler.AuthHandler.ResetPassword)
->>>>>>> main
 }
 
 func UserRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCustom) {
@@ -113,4 +89,18 @@ func ReservationRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.M
 func InventoryRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCustom) {
 	r.GET("/", mw.AuthMiddleware(), handler.InventoryLogHandler.GetInventoryLogs)
 	r.POST("/", mw.AuthMiddleware(), handler.InventoryLogHandler.CreateInventoryLog)
+}
+
+func CategoryRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCustom) {
+	r.GET("/", mw.AuthMiddleware(), handler.CategoryHandler.GetCategories)
+	r.GET("/:id", mw.AuthMiddleware(), handler.CategoryHandler.GetCategoryByID)
+	r.POST("/", mw.AuthMiddleware(), mw.RequireAdminPermission(), handler.CategoryHandler.CreateCategory)
+
+	// Protected routes dengan auth DAN permission
+	protected := r.Group("")
+	protected.Use(mw.AuthMiddleware(), mw.AdminPermissionMiddleware()) // 🔥 TAMBAH INI
+
+	protected.POST("", handler.CategoryHandler.CreateCategory)
+	protected.PUT("/:id", handler.CategoryHandler.UpdateCategory)
+	protected.DELETE("/:id", handler.CategoryHandler.DeleteCategory)
 }

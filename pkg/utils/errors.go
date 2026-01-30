@@ -18,47 +18,42 @@ var (
 	// Customer errors
 	ErrCustomerNotFound      = errors.New("customer not found")
 	ErrCustomerAlreadyExists = errors.New("customer already exists")
-)
 
-<<<<<<< HEAD
-// =============== ERROR CATEGORY ===============
-var (
+	// =============== ERROR CATEGORY ===============
 	ErrCategoryNotFound    = errors.New("category not found")
 	ErrCategoryExists      = errors.New("category name already exists")
 	ErrCategoryHasProducts = errors.New("cannot delete category with associated products")
 	ErrInvalidCategoryName = errors.New("category name is invalid")
 	ErrCategoryInactive    = errors.New("category is inactive")
+	ErrNoChangesProvided   = errors.New("no changes provided") // 🔥 Optional
 )
 
 // Helper untuk check business error
-=======
->>>>>>> main
 func IsBusinessError(err error) bool {
 	businessErrors := []error{
+		// Reservation errors
 		ErrReservationNotFound,
 		ErrTableNotFound,
 		ErrTableUnavailable,
 		ErrInsufficientCapacity,
-<<<<<<< HEAD
-		ErrInvalidStatusTransition,
-		ErrCategoryNotFound,
-		ErrCategoryExists,
-		ErrCategoryHasProducts,
-		ErrInvalidCategoryName,
-		ErrCategoryInactive:
-		return true
-	default:
-		return false
-=======
 		ErrInvalidReservationTime,
 		ErrInvalidStatus,
 		ErrInvalidStatusTransition,
 		ErrValidationFailed,
 		ErrInvalidDateFormat,
 		ErrInvalidTimeFormat,
+
+		// Customer errors
 		ErrCustomerNotFound,
 		ErrCustomerAlreadyExists,
->>>>>>> main
+
+		// Category errors
+		ErrCategoryNotFound,
+		ErrCategoryExists,
+		ErrCategoryHasProducts,
+		ErrInvalidCategoryName,
+		ErrCategoryInactive,
+		ErrNoChangesProvided, // 🔥
 	}
 
 	for _, businessErr := range businessErrors {
