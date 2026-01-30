@@ -1,7 +1,6 @@
 package data
 
 import (
-<<<<<<< HEAD:internal/data/seeder/staff.go
 	"fmt"
 	"time"
 
@@ -48,7 +47,6 @@ func StaffSeeds(db *gorm.DB, users []entity.User) error {
 			Salary:            7_500_000,
 			Address:           "Jakarta",
 			AdditionalDetails: "Senior Waitress",
-=======
 	"project-POS-APP-golang-integer/internal/data/entity"
 )
 
@@ -73,7 +71,6 @@ func ProfileSeeds() []entity.Profile{
 			ProfileImageURL: "",
 			Address: "Jl. Gunung Batu, Bandung, Jawa Barat",
 			AdditionalDetails: "",
->>>>>>> main:internal/data/seeder/profile.go
 		},
 	}
 
