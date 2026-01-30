@@ -1,0 +1,4 @@
+{"level":"error","timestamp":"2026-01-30T00:08:41.282+0700","caller":"repository/session.go:74","msg":"Error query validate token: ","error":"sql: Scan called without calling Next"}
+{"level":"error","timestamp":"2026-01-30T00:08:41.444+0700","caller":"usecase/auth.go:78","msg":"Error validate token service: ","error":"sql: Scan called without calling Next"}
+{"level":"error","timestamp":"2026-01-30T00:23:02.705+0700","caller":"repository/session.go:65","msg":"Error query validate token: ","error":"sql: Scan called without calling Next"}
+{"level":"error","timestamp":"2026-01-30T00:23:02.731+0700","caller":"usecase/auth.go:78","msg":"Error validate token service: ","error":"sql: Scan called without calling Next"}

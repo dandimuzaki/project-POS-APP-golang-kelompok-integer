@@ -1,6 +1,7 @@
 package data
 
 import (
+<<<<<<< HEAD:internal/data/seeder/staff.go
 	"fmt"
 	"time"
 
@@ -47,6 +48,32 @@ func StaffSeeds(db *gorm.DB, users []entity.User) error {
 			Salary:            7_500_000,
 			Address:           "Jakarta",
 			AdditionalDetails: "Senior Waitress",
+=======
+	"project-POS-APP-golang-integer/internal/data/entity"
+)
+
+func ProfileSeeds() []entity.Profile{
+	return []entity.Profile{
+		{
+			UserID: 3,
+			FullName: "Rafli Nur Rahman",
+			Phone: "087876544692",
+			DateOfBirth: nil,
+			Salary: 15000000,
+			ProfileImageURL: "",
+			Address: "Jl. Soekarno-Hatta, Tangerang, Banten",
+			AdditionalDetails: "",
+		},
+		{
+			UserID: 4,
+			FullName: "Dandi Muhamad Zaki",
+			Phone: "085117388153",
+			DateOfBirth: nil,
+			Salary: 15000000,
+			ProfileImageURL: "",
+			Address: "Jl. Gunung Batu, Bandung, Jawa Barat",
+			AdditionalDetails: "",
+>>>>>>> main:internal/data/seeder/profile.go
 		},
 	}
 

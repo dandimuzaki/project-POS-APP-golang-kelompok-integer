@@ -3,6 +3,7 @@ package repository
 import (
 	"context"
 	"project-POS-APP-golang-integer/internal/data/entity"
+	"project-POS-APP-golang-integer/internal/infra"
 	"project-POS-APP-golang-integer/pkg/utils"
 	"time"
 
@@ -30,6 +31,7 @@ func NewSessionRepo(db *gorm.DB, log *zap.Logger) SessionRepository {
 }
 
 func (r *sessionRepository) Create(ctx context.Context, userID uint) (uuid.UUID, error) {
+	db := infra.GetDB(ctx, r.db)
 	// Create session after login and register
 	token, err := utils.GenerateRandomToken(16)
 	if err != nil {
@@ -44,19 +46,7 @@ func (r *sessionRepository) Create(ctx context.Context, userID uint) (uuid.UUID,
 		CreatedAt: time.Now(),
 	}
 
-	tx := r.db.Begin()
-	if tx.Error != nil {
-		return uuid.Nil, tx.Error
-	}
-	defer func() {
-		if r := recover(); r != nil {
-			tx.Rollback()
-		} else {
-			tx.Commit()
-		}
-	}()
-
-	err = tx.Create(&session).Error
+	err = db.Create(&session).Error
 	if err != nil {
 		r.Logger.Error("Error query create session: ", zap.Error(err))
 		return uuid.Nil, err
@@ -66,21 +56,32 @@ func (r *sessionRepository) Create(ctx context.Context, userID uint) (uuid.UUID,
 }
 
 func (r *sessionRepository) ValidateToken(ctx context.Context, token string) (*uint, error) {
+	db := infra.GetDB(ctx, r.db)
 	// Validate token to authorize user
-	var userID *uint
-	query := r.db.Model(&entity.Session{}).Select("user_id").Where("token = ?", token).Where("expired_at > NOW()").Where("revoked_at IS NULL")
-	err := query.Find(&userID).Error
+	type result struct {
+		UserID uint
+	}
+
+	var res result
+
+	err := db.
+		Model(&entity.Session{}).
+		Select("user_id").
+		Where("token = ? AND expires_at > NOW() AND revoked_at IS NULL", token).
+		First(&res).
+		Error
 	if err != nil {
 		r.Logger.Error("Error query validate token: ", zap.Error(err))
 		return nil, err
 	}
 
-	return userID, nil
+	return &res.UserID, nil
 }
 
 func (r *sessionRepository) Revoke(ctx context.Context, token string) error {
+	db := infra.GetDB(ctx, r.db)
 	// Revoke session after logout
-	err := r.db.Model(&entity.Session{}).Where("token = ?", token).Update("revoked_at", "NOW()").Error
+	err := db.Model(&entity.Session{}).Where("token = ?", token).Update("revoked_at", "NOW()").Error
 	if err != nil {
 		r.Logger.Error("Error query revoke session: ", zap.Error(err))
 	}

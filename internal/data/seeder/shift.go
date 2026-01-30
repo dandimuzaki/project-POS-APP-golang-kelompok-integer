@@ -27,7 +27,7 @@ func ShiftSeeds() []entity.Shift{
 
 	return []entity.Shift{
 		{
-			StaffID: 1,
+			ProfileID: 1,
 			WeekNumber: 1,
 			ShiftStart: utcStart,
 			ShiftEnd: utcEnd,
@@ -36,7 +36,7 @@ func ShiftSeeds() []entity.Shift{
 			UpdatedAt: time.Now(),
 		},
 		{
-			StaffID: 2,
+			ProfileID: 2,
 			WeekNumber: 2,
 			ShiftStart: utcStart,
 			ShiftEnd: utcEnd,

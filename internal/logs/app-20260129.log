@@ -1,0 +1,5 @@
+{"level":"error","timestamp":"2026-01-29T18:34:14.430+0700","caller":"repository/profile.go:33","msg":"Error query create profile","error":"ERROR: insert or update on table \"profiles\" violates foreign key constraint \"fk_users_staff\" (SQLSTATE 23503)"}
+{"level":"error","timestamp":"2026-01-29T18:34:14.446+0700","caller":"usecase/user.go:99","msg":"Error create user transaction","error":"ERROR: insert or update on table \"profiles\" violates foreign key constraint \"fk_users_staff\" (SQLSTATE 23503)"}
+{"level":"error","timestamp":"2026-01-29T18:58:56.859+0700","caller":"repository/profile.go:33","msg":"Error query create profile","error":"ERROR: insert or update on table \"profiles\" violates foreign key constraint \"fk_users_profile\" (SQLSTATE 23503)"}
+{"level":"error","timestamp":"2026-01-29T18:58:56.871+0700","caller":"usecase/user.go:99","msg":"Error create user transaction","error":"ERROR: insert or update on table \"profiles\" violates foreign key constraint \"fk_users_profile\" (SQLSTATE 23503)"}
+{"level":"error","timestamp":"2026-01-29T19:04:16.430+0700","caller":"usecase/auth.go:51","msg":"Incorrect password: "}

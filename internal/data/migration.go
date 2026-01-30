@@ -10,7 +10,7 @@ func AutoMigrate(db *gorm.DB) error {
 	return db.AutoMigrate(
 		// Auth
 		&entity.User{}, 
-		&entity.Staff{}, 
+		&entity.Profile{}, 
 		&entity.Shift{},
 		&entity.OTP{},
 		&entity.Session{},

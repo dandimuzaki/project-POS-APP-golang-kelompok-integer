@@ -2,17 +2,25 @@ package utils
 
 import "errors"
 
-// =============== ERROR RESERVATION ===============
 var (
-	ErrTableUnavailable        = errors.New("table is not available at selected time")
-	ErrInvalidReservationTime  = errors.New("reservation time must be at least 1 hour from now")
-	ErrCustomerNotFound        = errors.New("customer not found")
-	ErrTableNotFound           = errors.New("table not found")
+	// =============== ERROR RESERVATION ===============
 	ErrReservationNotFound     = errors.New("reservation not found")
-	ErrInsufficientCapacity    = errors.New("no tables available with sufficient capacity")
+	ErrTableNotFound           = errors.New("table not found")
+	ErrTableUnavailable        = errors.New("table is not available at the requested time")
+	ErrInsufficientCapacity    = errors.New("table capacity is insufficient")
+	ErrInvalidReservationTime  = errors.New("reservation time must be at least 1 hour from now")
 	ErrInvalidStatusTransition = errors.New("invalid status transition")
+	ErrInvalidStatus           = errors.New("invalid reservation status")
+	ErrValidationFailed        = errors.New("validation failed")
+	ErrInvalidDateFormat       = errors.New("invalid date format")
+	ErrInvalidTimeFormat       = errors.New("invalid time format")
+
+	// Customer errors
+	ErrCustomerNotFound      = errors.New("customer not found")
+	ErrCustomerAlreadyExists = errors.New("customer already exists")
 )
 
+<<<<<<< HEAD
 // =============== ERROR CATEGORY ===============
 var (
 	ErrCategoryNotFound    = errors.New("category not found")
@@ -23,14 +31,15 @@ var (
 )
 
 // Helper untuk check business error
+=======
+>>>>>>> main
 func IsBusinessError(err error) bool {
-	switch err {
-	case ErrTableUnavailable,
-		ErrInvalidReservationTime,
-		ErrCustomerNotFound,
-		ErrTableNotFound,
+	businessErrors := []error{
 		ErrReservationNotFound,
+		ErrTableNotFound,
+		ErrTableUnavailable,
 		ErrInsufficientCapacity,
+<<<<<<< HEAD
 		ErrInvalidStatusTransition,
 		ErrCategoryNotFound,
 		ErrCategoryExists,
@@ -40,5 +49,22 @@ func IsBusinessError(err error) bool {
 		return true
 	default:
 		return false
+=======
+		ErrInvalidReservationTime,
+		ErrInvalidStatus,
+		ErrInvalidStatusTransition,
+		ErrValidationFailed,
+		ErrInvalidDateFormat,
+		ErrInvalidTimeFormat,
+		ErrCustomerNotFound,
+		ErrCustomerAlreadyExists,
+>>>>>>> main
 	}
+
+	for _, businessErr := range businessErrors {
+		if errors.Is(err, businessErr) {
+			return true
+		}
+	}
+	return false
 }
