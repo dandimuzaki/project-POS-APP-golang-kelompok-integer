@@ -51,6 +51,7 @@ func ApiV1(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCu
 	ReservationRoute(r.Group("/reservations"), handler, mw)
 	InventoryRoute(r.Group("/inventories"), handler, mw)
 	CategoryRoute(r.Group("/categories"), handler, mw)
+	ProductRoute(r.Group("/products"), handler, mw)
 }
 
 func AuthRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCustom) {
@@ -105,4 +106,21 @@ func CategoryRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.Midd
 	protected.POST("", handler.CategoryHandler.CreateCategory)       // POST /api/v1/categories
 	protected.PUT("/:id", handler.CategoryHandler.UpdateCategory)    // PUT /api/v1/categories/:id
 	protected.DELETE("/:id", handler.CategoryHandler.DeleteCategory) // DELETE /api/v1/categories/:id
+}
+
+func ProductRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCustom) {
+	// 🔥 PUBLIC ROUTES - tidak perlu auth
+	r.GET("", handler.ProductHandler.GetAllProducts) // TODO: akan dibuat nanti
+	r.GET("/:id", handler.ProductHandler.GetProductByID)
+
+	// 🔥 PROTECTED ROUTES - perlu auth DAN admin permission
+	protected := r.Group("")
+	protected.Use(
+		mw.AuthMiddleware(),
+		mw.RequirePermission("admin", "superadmin"),
+	)
+
+	protected.POST("", handler.ProductHandler.CreateProduct)
+	protected.PUT("/:id", handler.ProductHandler.UpdateProduct)
+	protected.DELETE("/:id", handler.ProductHandler.DeleteProduct)
 }
