@@ -15,6 +15,7 @@ type Repository struct {
 	ReservationRepo  ReservationRepository
 	InventoryLogRepo InventoryLogRepository
 	Product          ProductRepository
+	Category         CategoryRepository
 }
 
 func NewRepository(db *gorm.DB, log *zap.Logger) *Repository {
@@ -27,6 +28,7 @@ func NewRepository(db *gorm.DB, log *zap.Logger) *Repository {
 		TableRepo:        NewTableRepo(db, log),
 		ReservationRepo:  NewReservationRepo(db, log),
 		InventoryLogRepo: NewInventoryLogRepo(db, log),
-		Product:          NewProductRepository(db),
+		Product:          NewProductRepository(db, log),
+		Category:         NewCategoryRepository(db, log),
 	}
 }

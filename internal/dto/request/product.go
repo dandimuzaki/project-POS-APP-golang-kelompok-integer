@@ -28,11 +28,43 @@ type UpdateProductRequest struct {
 	Status      string  `json:"status" validate:"omitempty,oneof=active inactive"`
 }
 
-// Validate validates the request struct
+// GetProductsRequest for filtering and sorting products
+type GetProductsRequest struct {
+	Page         int     `form:"page" validate:"min=1"`
+	Limit        int     `form:"limit" validate:"min=1,max=100"`
+	CategoryID   uint    `form:"category_id" validate:"omitempty,min=1"`
+	CategoryName string  `form:"category_name" validate:"omitempty"`
+	Status       string  `form:"status" validate:"omitempty,oneof=active inactive"`
+	MinPrice     float64 `form:"min_price" validate:"omitempty,min=0"`
+	MaxPrice     float64 `form:"max_price" validate:"omitempty,min=0"`
+	Search       string  `form:"search" validate:"omitempty"`
+
+	// Sorting
+	SortByStock     string `form:"sort_by_stock" validate:"omitempty,oneof=asc desc"`
+	SortByPrice     string `form:"sort_by_price" validate:"omitempty,oneof=asc desc"`
+	SortByCreatedAt string `form:"sort_by_created_at" validate:"omitempty,oneof=asc desc"`
+	SortBySold      string `form:"sort_by_sold" validate:"omitempty,oneof=asc desc"`
+}
+
+// UpdateStockRequest for updating product stock
+type UpdateStockRequest struct {
+	Quantity int    `json:"quantity" validate:"required"`
+	Note     string `json:"note" validate:"omitempty,max=500"`
+}
+
+// Validate methods
 func (req *CreateProductRequest) Validate() error {
 	return validate.Struct(req)
 }
 
 func (req *UpdateProductRequest) Validate() error {
+	return validate.Struct(req)
+}
+
+func (req *GetProductsRequest) Validate() error {
+	return validate.Struct(req)
+}
+
+func (req *UpdateStockRequest) Validate() error {
 	return validate.Struct(req)
 }
