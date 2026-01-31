@@ -6,25 +6,27 @@ import (
 )
 
 type Repository struct {
-	UserRepo        UserRepository
-	ProfileRepo ProfileRepository
-	OTPRepo OTPRepository
-	SessionRepo SessionRepository
-	CustomerRepo    CustomerRepository
-	TableRepo       TableRepository
-	ReservationRepo ReservationRepository
+	UserRepo         UserRepository
+	ProfileRepo      ProfileRepository
+	OTPRepo          OTPRepository
+	SessionRepo      SessionRepository
+	CustomerRepo     CustomerRepository
+	TableRepo        TableRepository
+	ReservationRepo  ReservationRepository
 	InventoryLogRepo InventoryLogRepository
+	Product          ProductRepository
 }
 
 func NewRepository(db *gorm.DB, log *zap.Logger) *Repository {
 	return &Repository{
-		UserRepo:        NewUserRepo(db, log),
-		ProfileRepo: NewProfileRepo(db, log),
-		OTPRepo: NewOTPRepo(db, log),
-		SessionRepo: NewSessionRepo(db, log),
-		CustomerRepo:    NewCustomerRepo(db, log),
-		TableRepo:       NewTableRepo(db, log),
-		ReservationRepo: NewReservationRepo(db, log),
+		UserRepo:         NewUserRepo(db, log),
+		ProfileRepo:      NewProfileRepo(db, log),
+		OTPRepo:          NewOTPRepo(db, log),
+		SessionRepo:      NewSessionRepo(db, log),
+		CustomerRepo:     NewCustomerRepo(db, log),
+		TableRepo:        NewTableRepo(db, log),
+		ReservationRepo:  NewReservationRepo(db, log),
 		InventoryLogRepo: NewInventoryLogRepo(db, log),
+		Product:          NewProductRepository(db),
 	}
 }
