@@ -16,6 +16,8 @@ type Repository struct {
 	TableRepo       TableRepository
 	ReservationRepo ReservationRepository
 	InventoryLogRepo InventoryLogRepository
+	Product          ProductRepository
+	Category         CategoryRepository
 }
 
 func NewRepository(db *gorm.DB, log *zap.Logger) *Repository {
@@ -25,10 +27,12 @@ func NewRepository(db *gorm.DB, log *zap.Logger) *Repository {
 		OTPRepo: NewOTPRepo(db, log),
 		SessionRepo: NewSessionRepo(db, log),
 		PasswordResetRepo: NewPasswordResetRepo(db, log),
-		CategoryRepo: NewCategoryRepository(db),
+		CategoryRepo: NewCategoryRepository(db, log),
 		CustomerRepo:    NewCustomerRepo(db, log),
 		TableRepo:       NewTableRepo(db, log),
 		ReservationRepo: NewReservationRepo(db, log),
 		InventoryLogRepo: NewInventoryLogRepo(db, log),
+		Product:          NewProductRepository(db, log),
+		Category:         NewCategoryRepository(db, log),
 	}
 }

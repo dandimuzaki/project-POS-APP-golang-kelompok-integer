@@ -5,8 +5,8 @@ import (
 	"errors"
 	"project-POS-APP-golang-integer/internal/data/entity"
 	"project-POS-APP-golang-integer/internal/data/repository"
-	"project-POS-APP-golang-integer/internal/data/repository/mocks"
 	"project-POS-APP-golang-integer/internal/dto/request"
+	"project-POS-APP-golang-integer/internal/mocks"
 	"testing"
 	"time"
 

@@ -4,6 +4,7 @@ import (
 	"project-POS-APP-golang-integer/internal/adaptor"
 	"project-POS-APP-golang-integer/internal/data/repository"
 	"project-POS-APP-golang-integer/internal/infra"
+	"project-POS-APP-golang-integer/internal/infra/email"
 	"project-POS-APP-golang-integer/internal/usecase"
 	mCustom "project-POS-APP-golang-integer/pkg/middleware"
 	"project-POS-APP-golang-integer/pkg/utils"
@@ -25,11 +26,16 @@ func Wiring(db *gorm.DB, repo *repository.Repository, log *zap.Logger, config ut
 	r := gin.Default()
 	r1 := r.Group("/api/v1")
 
+	emailJobs := make(chan utils.EmailJob, 10) // BUFFER
 	stop := make(chan struct{})
+	metrics := &utils.Metrics{}
 	wg := &sync.WaitGroup{}
 
+	utils.StartEmailWorkers(3, emailJobs, stop, metrics, wg)
+
 	tx := infra.NewGormTxManager(db)
-	usecase := usecase.NewUsecase(tx, db, repo, log, config)
+	email := email.NewAsyncEmailSender(emailJobs, config, log)
+	usecase := usecase.NewUsecase(tx, repo, log, email)
 	handler := adaptor.NewHandler(usecase, log, config)
 	mw := mCustom.NewMiddlewareCustom(usecase, log)
 
@@ -50,6 +56,8 @@ func ApiV1(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCu
 	ProfileRoute(r.Group("/profile"), handler, mw)
 	ReservationRoute(r.Group("/reservations"), handler, mw)
 	InventoryRoute(r.Group("/inventories"), handler, mw)
+	CategoryRoute(r.Group("/categories"), handler, mw)
+	ProductRoute(r.Group("/products"), handler, mw)
 }
 
 func AuthRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCustom) {
@@ -59,6 +67,7 @@ func AuthRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.Middlewa
 	{
 		r.POST("/logout", handler.AuthHandler.Logout)
 		r.POST("/request-reset-password", handler.AuthHandler.RequestResetPassword)
+		r.POST("/validate-otp", handler.AuthHandler.ValidateOTP)
 		r.POST("/reset-password", handler.AuthHandler.ResetPassword)
 	}
 }
@@ -99,15 +108,33 @@ func InventoryRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.Mid
 }
 
 func CategoryRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCustom) {
-	r.GET("/", mw.AuthMiddleware(), handler.CategoryHandler.GetCategories)
-	r.GET("/:id", mw.AuthMiddleware(), handler.CategoryHandler.GetCategoryByID)
-	r.POST("/", mw.AuthMiddleware(), mw.RequireAdminPermission(), handler.CategoryHandler.CreateCategory)
-
-	// Protected routes dengan auth DAN permission
+	// 🔥 PUBLIC ROUTES - tidak perlu auth
+	r.GET("", handler.CategoryHandler.GetAllCategories)    // GET /api/v1/categories
+	r.GET("/:id", handler.CategoryHandler.GetCategoryByID) // GET /api/v1/categories/:id
+	// 🔥 PROTECTED ROUTES - perlu auth DAN admin permission
 	protected := r.Group("")
-	protected.Use(mw.AuthMiddleware(), mw.AdminPermissionMiddleware()) // 🔥 TAMBAH INI
+	protected.Use(
+		mw.AuthMiddleware(),
+		mw.RequirePermission("admin", "superadmin"), // 🔥 GUNAKAN middleware yang ADA
+	)
+	protected.POST("", handler.CategoryHandler.CreateCategory)       // POST /api/v1/categories
+	protected.PUT("/:id", handler.CategoryHandler.UpdateCategory)    // PUT /api/v1/categories/:id
+	protected.DELETE("/:id", handler.CategoryHandler.DeleteCategory) // DELETE /api/v1/categories/:id
+}
 
-	protected.POST("", handler.CategoryHandler.CreateCategory)
-	protected.PUT("/:id", handler.CategoryHandler.UpdateCategory)
-	protected.DELETE("/:id", handler.CategoryHandler.DeleteCategory)
+func ProductRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCustom) {
+	// 🔥 PUBLIC ROUTES - tidak perlu auth
+	r.GET("", handler.ProductHandler.GetAllProducts) // TODO: akan dibuat nanti
+	r.GET("/:id", handler.ProductHandler.GetProductByID)
+
+	// 🔥 PROTECTED ROUTES - perlu auth DAN admin permission
+	protected := r.Group("")
+	protected.Use(
+		mw.AuthMiddleware(),
+		mw.RequirePermission("admin", "superadmin"),
+	)
+
+	protected.POST("", handler.ProductHandler.CreateProduct)
+	protected.PUT("/:id", handler.ProductHandler.UpdateProduct)
+	protected.DELETE("/:id", handler.ProductHandler.DeleteProduct)
 }

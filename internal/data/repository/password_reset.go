@@ -4,16 +4,16 @@ import (
 	"context"
 	"project-POS-APP-golang-integer/internal/data/entity"
 	"project-POS-APP-golang-integer/internal/infra"
-	"project-POS-APP-golang-integer/pkg/utils"
+	"time"
 
 	"go.uber.org/zap"
 	"gorm.io/gorm"
 )
 
 type PasswordResetRepository interface {
-	CreateResetToken(ctx context.Context, reset entity.PasswordReset) error
-	MarkResetToken(ctx context.Context, token string) error
-	ValidateResetToken(ctx context.Context, token string) (*uint, error)
+	Create(ctx context.Context, reset *entity.PasswordReset) error
+	MarkUsed(ctx context.Context, tokenID uint) error
+	GetValidByUser(ctx context.Context, userID uint) (*entity.PasswordReset, error)
 }
 
 type passwordResetRepository struct {
@@ -28,46 +28,44 @@ func NewPasswordResetRepo(db *gorm.DB, log *zap.Logger) PasswordResetRepository 
 	}
 }
 
-func (r *passwordResetRepository) CreateResetToken(ctx context.Context, reset entity.PasswordReset) error {
+func (r *passwordResetRepository) Create(ctx context.Context, reset *entity.PasswordReset) error {
 	db := infra.GetDB(ctx, r.db)
-	err := db.Create(&reset).Error
-	if err != nil {
-		r.Logger.Error("Error query create token: ", zap.Error(err))
+	if err := db.Create(reset).Error; err != nil {
+		r.Logger.Error("Error create reset password", zap.Error(err))
 		return err
 	}
-
 	return nil
 }
 
-func (r *passwordResetRepository) ValidateResetToken(ctx context.Context, token string) (*uint, error) {
-	db := infra.GetDB(ctx, r.db)
-	// Validate token to authorize user
-	type result struct {
-		UserID uint
-	}
+func (r *passwordResetRepository) GetValidByUser(ctx context.Context, userID uint) (*entity.PasswordReset, error) {
+	var reset entity.PasswordReset
 
-	var res result
-	tokenHash := utils.HashPassword(token)
+	err := r.db.
+		Where(
+			"user_id = ? AND expired_at > ? AND used_at IS NULL",
+			userID,
+			time.Now(),
+		).
+		Order("created_at DESC").
+		First(&reset).Error
 
-	err := db.
-		Model(&entity.PasswordReset{}).
-		Select("user_id").
-		Where("reset_token_hash = ? AND expired_at > NOW() AND used_at IS NULL", tokenHash).
-		First(&res).
-		Error
 	if err != nil {
-		r.Logger.Error("Error query validate token: ", zap.Error(err))
+		r.Logger.Error("Error get valid reset password", zap.Error(err))
 		return nil, err
 	}
 
-	return &res.UserID, nil
+	return &reset, nil
 }
 
-func (r *passwordResetRepository) MarkResetToken(ctx context.Context, token string) error {
-	// Mark token after request success
-	err := r.db.Model(&entity.PasswordReset{}).Where("reset_token_hash = ?", token).Update("used_at", "NOW()").Error
+func (r *passwordResetRepository) MarkUsed(ctx context.Context, tokenID uint) error {
+	err := r.db.
+		Model(&entity.PasswordReset{}).
+		Where("id = ?", tokenID).
+		Update("used_at", time.Now()).
+		Error
+
 	if err != nil {
-		r.Logger.Error("Error query update token: ", zap.Error(err))
+		r.Logger.Error("Error mark reset password used", zap.Error(err))
 	}
 
 	return err

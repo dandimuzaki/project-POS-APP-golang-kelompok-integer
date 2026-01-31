@@ -8,6 +8,7 @@ import (
 	"project-POS-APP-golang-integer/internal/dto/request"
 	"project-POS-APP-golang-integer/internal/dto/response"
 	"project-POS-APP-golang-integer/pkg/utils"
+	content "project-POS-APP-golang-integer/pkg/utils/email"
 	"time"
 
 	"go.uber.org/zap"
@@ -19,6 +20,7 @@ type AuthService interface {
 	ValidateToken(ctx context.Context, token string) (*uint, error)
 	Logout(ctx context.Context, token string) error
 	RequestResetPassword(ctx context.Context, email string) (*response.OTPResponse, error)
+	ValidateOTP(ctx context.Context, req request.ValidateOTP) (*response.ResetTokenResponse, error)
 	ResetPassword(ctx context.Context, req request.ResetPassword) error
 }
 
@@ -26,15 +28,15 @@ type authService struct {
 	tx TxManager
 	repo *repository.Repository
 	log *zap.Logger
-	config utils.Configuration
+	email EmailSender
 }
 
-func NewAuthService(tx TxManager, repo *repository.Repository, log *zap.Logger, config utils.Configuration) AuthService {
+func NewAuthService(tx TxManager, repo *repository.Repository, log *zap.Logger, email EmailSender) AuthService {
 	return &authService{
 		tx: tx,
 		repo: repo,
 		log: log,
-		config: config,
+		email: email,
 	}
 }
 
@@ -106,17 +108,26 @@ func (s *authService) RequestResetPassword(ctx context.Context, email string) (*
 		OTPCode: otpCode,
 		ExpiresAt: time.Now().Add(10 * time.Minute),
 	}
-	err = s.repo.OTPRepo.CreateOTP(ctx, otp)
+	err = s.repo.OTPRepo.Create(ctx, &otp)
 	if err != nil {
 		s.log.Error("Error create otp", zap.Error(err))
 		return nil, err
 	}
 
-	// Send email with OTP
-
 	res := response.OTPResponse{
 		OTPCode: otpCode,
 		ExpiresAt: otp.ExpiresAt,
+	}
+
+	// Send email
+	err = s.email.Send(ctx, request.EmailRequest{
+		To:      user.Email,
+		Subject: "Reset Password",
+		Body:    content.SendOTP(res),
+	})
+
+	if err != nil {
+		s.log.Error("Error send email", zap.Error(err))
 	}
 	
 	return &res, nil
@@ -131,9 +142,20 @@ func (s *authService) ValidateOTP(ctx context.Context, req request.ValidateOTP) 
 	}
 
 	// Validate OTP
-	err = s.repo.OTPRepo.ValidateOTP(ctx, req.OTP)
+	otp, err := s.repo.OTPRepo.GetValidByUser(ctx, user.ID)
 	if err != nil {
-		s.log.Error("Error validate OTP", zap.Error(err))
+		s.log.Error("Error get valid OTP", zap.Error(err))
+		return nil, err
+	}
+
+	if otp.OTPCode != req.OTP {
+		return nil, err
+	}
+
+	// Mark OTP as used
+	err = s.repo.OTPRepo.MarkUsed(ctx, otp.ID)
+	if err != nil {
+		s.log.Error("Error mark OTP as used", zap.Error(err))
 		return nil, err
 	}
 
@@ -145,7 +167,7 @@ func (s *authService) ValidateOTP(ctx context.Context, req request.ValidateOTP) 
 		ExpiredAt: time.Now().Add(5 * time.Minute),
 		CreatedAt: time.Now(),
 	}
-	err = s.repo.PasswordResetRepo.CreateResetToken(ctx, reset)
+	err = s.repo.PasswordResetRepo.Create(ctx, &reset)
 	if err != nil {
 		s.log.Error("Error create reset token", zap.Error(err))
 		return nil, err
@@ -159,36 +181,44 @@ func (s *authService) ValidateOTP(ctx context.Context, req request.ValidateOTP) 
 }
 
 func (s *authService) ResetPassword(ctx context.Context, req request.ResetPassword) error {
-// 	// Find user by email
-// 	user, err := s.repo.UserRepo.FindUserByEmail(ctx, req.Email)
-// 	if err != nil {
-// 		s.log.Error("Error find user by email", zap.Error(err))
-// 		return err
-// 	}
+	// Get user by email
+	user, err := s.repo.UserRepo.FindUserByEmail(ctx, req.Email)
+	if err != nil {
+		s.log.Error("Error get user by id", zap.Error(err))
+		return err
+	}
 
-// 	// Validate OTP
-// 	err = s.repo.OTPRepo.ValidateOTP(ctx, req.OTP)
-// 	if err != nil {
-// 		s.log.Error("Error validate OTP", zap.Error(err))
-// 		return err
-// 	}
+	// Get valid token
+	reset, err := s.repo.PasswordResetRepo.GetValidByUser(ctx, user.ID)
+	if err != nil {
+		s.log.Error("Error get token", zap.Error(err))
+		return err
+	}
 
-// 	// Hash password
-// 	user.PasswordHash = utils.HashPassword(req.NewPassword)
+	if !utils.CheckPassword(req.ResetToken, reset.ResetTokenHash) {
+		return utils.ErrInvalidToken
+	}
 
-// 	err = s.tx.WithinTx(ctx, func(ctx context.Context) error {
-// 		// Update user password
-// 		e := s.repo.UserRepo.UpdateUser(ctx, user.ID, user)
-// 		if e != nil {
-// 			return e
-// 		}
-// 		// Mark OTP as used
-// 		e = s.repo.OTPRepo.MarkOTP(ctx, req.OTP)
-// 		if e != nil {
-// 			return e
-// 		}
-// 		return nil
-// 	})
+	err = s.tx.WithinTx(ctx, func(ctx context.Context) error {
+		// Hash password
+		user.PasswordHash = utils.HashPassword(req.NewPassword)
+		// Update user password
+		e := s.repo.UserRepo.UpdateUser(ctx, user.ID, user)
+		if e != nil {
+			return e
+		}
+		// Mark token as used
+		e = s.repo.PasswordResetRepo.MarkUsed(ctx, reset.ID)
+		if e != nil {
+			return e
+		}
+		return nil
+	})
+
+	if err != nil {
+		s.log.Error("Error reset password", zap.Error(err))
+		return err
+	}
 
 	return nil
 }

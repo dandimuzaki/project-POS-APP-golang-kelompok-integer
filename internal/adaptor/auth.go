@@ -5,6 +5,7 @@ import (
 	"project-POS-APP-golang-integer/internal/dto/request"
 	"project-POS-APP-golang-integer/internal/usecase"
 	"project-POS-APP-golang-integer/pkg/utils"
+	"strings"
 
 	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
@@ -67,7 +68,30 @@ func (h *AuthHandler) RequestResetPassword(c *gin.Context) {
 		return
 	}
 
-	utils.ResponseSuccess(c, http.StatusOK, "login success", result)
+	utils.ResponseSuccess(c, http.StatusOK, "request reset password success", result)
+}
+
+func (h *AuthHandler) ValidateOTP(c *gin.Context) {
+	var req request.ValidateOTP
+	if err := c.ShouldBindJSON(&req); err != nil {
+		utils.ResponseFailed(c, http.StatusBadRequest, "invalid request", err)
+		return
+	}
+
+	// Validation
+	messages, err := utils.ValidateErrors(req)
+	if err != nil {
+		utils.ResponseFailed(c, http.StatusBadRequest, err.Error(), messages)
+		return
+	}
+
+	result, err := h.service.ValidateOTP(c, req)
+	if err != nil {
+		utils.ResponseFailed(c, http.StatusBadRequest, "validate otp failed", err)
+		return
+	}
+
+	utils.ResponseSuccess(c, http.StatusOK, "validate otp success", result)
 }
 
 func (h *AuthHandler) ResetPassword(c *gin.Context) {
@@ -94,5 +118,18 @@ func (h *AuthHandler) ResetPassword(c *gin.Context) {
 }
 
 func (h *AuthHandler) Logout(c *gin.Context) {
-	
+	auth := c.GetHeader("Authorization")
+	if !strings.HasPrefix(auth, "Bearer ") {
+		utils.ResponseFailed(c, http.StatusUnauthorized, "missing token", nil)
+		return
+	}
+
+	token := strings.TrimPrefix(auth, "Bearer ")
+	err := h.service.Logout(c, token)
+	if err != nil {
+		utils.ResponseFailed(c, http.StatusBadRequest, "logout failed", err)
+		return
+	}
+
+	utils.ResponseSuccess(c, http.StatusOK, "logout success", nil)
 }

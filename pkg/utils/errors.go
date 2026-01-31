@@ -5,6 +5,8 @@ import "errors"
 var (
 	// =============== ERROR AUTH ===============
 	ErrUserNotFound = errors.New("user not found")
+	ErrInvalidOTP = errors.New("invalid OTP")
+	ErrInvalidToken = errors.New("invalid token")
 
 	// =============== ERROR RESERVATION ===============
 	ErrReservationNotFound     = errors.New("reservation not found")
@@ -29,6 +31,14 @@ var (
 	ErrInvalidCategoryName = errors.New("category name is invalid")
 	ErrCategoryInactive    = errors.New("category is inactive")
 	ErrNoChangesProvided   = errors.New("no changes provided") // 🔥 Optional
+
+	// =============== ERROR PRODUCT ===============
+	ErrProductNotFound   = errors.New("product not found")
+	ErrProductExists     = errors.New("product name already exists in category")
+	ErrProductHasOrders  = errors.New("cannot delete product with associated orders")
+	ErrProductInactive   = errors.New("product is inactive")
+	ErrProductOutOfStock = errors.New("product is out of stock")
+	ErrInsufficientStock = errors.New("insufficient stock")
 )
 
 // Helper untuk check business error
@@ -57,6 +67,13 @@ func IsBusinessError(err error) bool {
 		ErrInvalidCategoryName,
 		ErrCategoryInactive,
 		ErrNoChangesProvided, // 🔥
+		// Product errors
+		ErrProductNotFound,
+		ErrProductExists,
+		ErrProductHasOrders,
+		ErrProductInactive,
+		ErrProductOutOfStock,
+		ErrInsufficientStock,
 	}
 
 	for _, businessErr := range businessErrors {

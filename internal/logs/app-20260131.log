@@ -1,0 +1,35 @@
+{"level":"error","timestamp":"2026-01-31T18:00:02.970+0700","caller":"repository/password_reset.go:53","msg":"Error get valid reset password","error":"ERROR: column \"expires_at\" does not exist (SQLSTATE 42703)"}
+{"level":"error","timestamp":"2026-01-31T18:00:02.987+0700","caller":"usecase/auth.go:184","msg":"Error get token","error":"ERROR: column \"expires_at\" does not exist (SQLSTATE 42703)"}
+{"level":"error","timestamp":"2026-01-31T19:59:57.308+0700","caller":"utils/email.go:38","msg":"Error send email: ","error":"gomail: could not send email 1: gomail: invalid address \"\": mail: no address"}
+{"level":"info","timestamp":"2026-01-31T19:59:57.321+0700","caller":"utils/email.go:40","msg":"Email send successfully"}
+{"level":"error","timestamp":"2026-01-31T20:03:39.644+0700","caller":"repository/user.go:48","msg":"Error query create user","error":"ERROR: duplicate key value violates unique constraint \"idx_users_email\" (SQLSTATE 23505)"}
+{"level":"error","timestamp":"2026-01-31T20:03:39.649+0700","caller":"usecase/user.go:119","msg":"Error create user transaction","error":"ERROR: duplicate key value violates unique constraint \"idx_users_email\" (SQLSTATE 23505)"}
+{"level":"info","timestamp":"2026-01-31T20:03:59.555+0700","caller":"utils/email.go:36","msg":""}
+{"level":"info","timestamp":"2026-01-31T20:03:59.563+0700","caller":"utils/email.go:37","msg":"dandi@gmail.com"}
+{"level":"error","timestamp":"2026-01-31T20:04:00.819+0700","caller":"utils/email.go:40","msg":"Error send email: ","error":"gomail: could not send email 1: gomail: invalid address \"\": mail: no address"}
+{"level":"info","timestamp":"2026-01-31T20:04:00.820+0700","caller":"utils/email.go:42","msg":"Email send successfully"}
+{"level":"info","timestamp":"2026-01-31T20:05:41.559+0700","caller":"utils/email.go:36","msg":"integer.lumoshive@gmail.com"}
+{"level":"info","timestamp":"2026-01-31T20:05:41.562+0700","caller":"utils/email.go:37","msg":"tes@gmail.com"}
+{"level":"info","timestamp":"2026-01-31T20:05:45.121+0700","caller":"utils/email.go:42","msg":"Email send successfully"}
+{"level":"info","timestamp":"2026-01-31T20:06:38.366+0700","caller":"utils/email.go:36","msg":"integer.lumoshive@gmail.com"}
+{"level":"info","timestamp":"2026-01-31T20:06:38.370+0700","caller":"utils/email.go:37","msg":"dandimuzaki@gmail.com"}
+{"level":"info","timestamp":"2026-01-31T20:06:40.932+0700","caller":"utils/email.go:42","msg":"Email send successfully"}
+{"level":"info","timestamp":"2026-01-31T20:07:23.486+0700","caller":"utils/email.go:36","msg":"integer.lumoshive@gmail.com"}
+{"level":"info","timestamp":"2026-01-31T20:07:23.486+0700","caller":"utils/email.go:37","msg":"dandimuzaki@gmail.com"}
+{"level":"info","timestamp":"2026-01-31T20:07:26.035+0700","caller":"utils/email.go:42","msg":"Email send successfully"}
+{"level":"error","timestamp":"2026-01-31T20:08:48.199+0700","caller":"usecase/auth.go:58","msg":"Incorrect password: "}
+{"level":"info","timestamp":"2026-01-31T20:12:37.597+0700","caller":"utils/email.go:36","msg":"integer.lumoshive@gmail.com"}
+{"level":"info","timestamp":"2026-01-31T20:12:37.599+0700","caller":"utils/email.go:37","msg":"ihzhabaihaqqi05@gmail.com"}
+{"level":"info","timestamp":"2026-01-31T20:12:40.283+0700","caller":"utils/email.go:42","msg":"Email send successfully"}
+{"level":"info","timestamp":"2026-01-31T20:13:07.263+0700","caller":"utils/email.go:36","msg":"integer.lumoshive@gmail.com"}
+{"level":"info","timestamp":"2026-01-31T20:13:07.265+0700","caller":"utils/email.go:37","msg":"raflitbl1724@gmail.com"}
+{"level":"info","timestamp":"2026-01-31T20:13:09.771+0700","caller":"utils/email.go:42","msg":"Email send successfully"}
+{"level":"info","timestamp":"2026-01-31T20:15:19.629+0700","caller":"utils/email.go:36","msg":"integer.lumoshive@gmail.com"}
+{"level":"info","timestamp":"2026-01-31T20:15:19.629+0700","caller":"utils/email.go:37","msg":"raflitbl1724@gmail.com"}
+{"level":"info","timestamp":"2026-01-31T20:15:22.760+0700","caller":"utils/email.go:42","msg":"Email send successfully"}
+{"level":"info","timestamp":"2026-01-31T20:15:51.818+0700","caller":"utils/email.go:36","msg":"integer.lumoshive@gmail.com"}
+{"level":"info","timestamp":"2026-01-31T20:15:51.819+0700","caller":"utils/email.go:37","msg":"ihzhabaihaqqi05@gmail.com"}
+{"level":"info","timestamp":"2026-01-31T20:15:54.960+0700","caller":"utils/email.go:42","msg":"Email send successfully"}
+{"level":"info","timestamp":"2026-01-31T20:51:39.340+0700","caller":"usecase/category.go:113","msg":"Creating new category","service":"category","name":"Appetizer"}
+{"level":"info","timestamp":"2026-01-31T20:51:39.432+0700","caller":"usecase/category.go:140","msg":"Category created successfully","service":"category","id":6,"name":"Appetizer"}
+{"level":"info","timestamp":"2026-01-31T20:51:39.434+0700","caller":"adaptor/category.go:179","msg":"Category created successfully","handler":"category","category_id":6}

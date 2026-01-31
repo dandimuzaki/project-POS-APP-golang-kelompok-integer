@@ -10,6 +10,7 @@ type ResetPasswordRequest struct {
 }
 
 type ResetPassword struct {
+	Email       string `json:"email" validate:"email"`
 	NewPassword string `json:"new_password"`
 	ResetToken  string `json:"reset_token"`
 }

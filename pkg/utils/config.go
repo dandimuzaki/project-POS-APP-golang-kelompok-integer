@@ -75,7 +75,7 @@ func ReadConfiguration() (Configuration, error) {
 		SMTP: SMTPConfig{
 			Host: viper.GetString("SMTP_HOST"),
 			Port: viper.GetInt("SMTP_PORT"),
-			Email: viper.GetString("SMTP_EMAIL"),
+			Email: viper.GetString("SMTP_USER"),
 			Password: viper.GetString("SMTP_PASSWORD"),
 		},
 		BaseURL: viper.GetString("APP_URL"),

@@ -5,9 +5,9 @@ import (
 	"errors"
 	"project-POS-APP-golang-integer/internal/data/entity"
 	"project-POS-APP-golang-integer/internal/data/repository"
-	"project-POS-APP-golang-integer/internal/data/repository/mocks"
 	"project-POS-APP-golang-integer/internal/dto/request"
 	"project-POS-APP-golang-integer/internal/infra"
+	"project-POS-APP-golang-integer/internal/mocks"
 	"project-POS-APP-golang-integer/pkg/utils"
 	"testing"
 
@@ -29,7 +29,8 @@ func TestUserService_GetUserByID_Success(t *testing.T) {
 	}
 
 	log := zap.NewNop()
-	service := NewUserService(tx, &repo, log)
+	emailSender := new(mocks.EmailSenderMock)
+	service := NewUserService(tx, &repo, log, emailSender)
 
 	expectedUser := entity.User{
 		ID:    1,
@@ -62,7 +63,8 @@ func TestUserService_GetUserByID_Error(t *testing.T) {
 	}
 
 	log := zap.NewNop()
-	service := NewUserService(tx, &repo, log)
+	emailSender := new(mocks.EmailSenderMock)
+	service := NewUserService(tx, &repo, log, emailSender)
 
 	expectedErr := utils.ErrUserNotFound
 	userRepo.
@@ -91,7 +93,8 @@ func TestUserService_CreateUser_Success(t *testing.T) {
 	}
 
 	log := zap.NewNop()
-	service := NewUserService(tx, &repo, log)
+	emailSender := new(mocks.EmailSenderMock)
+	service := NewUserService(tx, &repo, log, emailSender)
 
 	req := request.UserRequest{
 		Email: "test@mail.com",
@@ -141,7 +144,8 @@ func TestUserService_CreateUser_UserRepoError(t *testing.T) {
 	}
 
 	log := zap.NewNop()
-	service := NewUserService(tx, &repo, log)
+	emailSender := new(mocks.EmailSenderMock)
+	service := NewUserService(tx, &repo, log, emailSender)
 
 	req := request.UserRequest{
 		Email: "test@mail.com",
@@ -181,7 +185,8 @@ func TestUserService_CreateUser_ProfileRepoError(t *testing.T) {
 	}
 
 	log := zap.NewNop()
-	service := NewUserService(tx, &repo, log)
+	emailSender := new(mocks.EmailSenderMock)
+	service := NewUserService(tx, &repo, log, emailSender)
 
 	req := request.UserRequest{
 		Email: "test@mail.com",

@@ -7,6 +7,7 @@ import (
 	"project-POS-APP-golang-integer/internal/dto/request"
 	"project-POS-APP-golang-integer/internal/dto/response"
 	"project-POS-APP-golang-integer/pkg/utils"
+	content "project-POS-APP-golang-integer/pkg/utils/email"
 
 	"go.uber.org/zap"
 )
@@ -24,13 +25,15 @@ type userService struct {
 	tx TxManager
 	repo *repository.Repository
 	log *zap.Logger
+	email EmailSender
 }
 
-func NewUserService(tx TxManager, repo *repository.Repository, log *zap.Logger) UserService {
+func NewUserService(tx TxManager, repo *repository.Repository, log *zap.Logger, email EmailSender) UserService {
 	return &userService{
 		tx: tx,
 		repo: repo,
 		log: log,
+		email: email,
 	}
 }
 
@@ -122,6 +125,17 @@ func (s *userService) CreateUser(ctx context.Context, req request.UserRequest) (
 		Role: createdUser.Role,
 		Password: password,
 	}
+
+	err = s.email.Send(ctx, request.EmailRequest{
+		To:      user.Email,
+		Subject: "Account Registered",
+		Body:    content.AccountCreated(res),
+	})
+
+	if err != nil {
+		s.log.Error("Error send email", zap.Error(err))
+	}
+
 	return &res, err
 }
 
