@@ -2,8 +2,10 @@ package repository
 
 import (
 	"context"
+	"errors"
 	"project-POS-APP-golang-integer/internal/data/entity"
 	"project-POS-APP-golang-integer/internal/infra"
+	"project-POS-APP-golang-integer/pkg/utils"
 	"strings"
 
 	"go.uber.org/zap"
@@ -100,25 +102,43 @@ func (r *userRepository) GetUserList(ctx context.Context, f UserQueryParams) ([]
 
 func (r *userRepository) GetUserByID(ctx context.Context, id uint) (entity.User, error) {
 	db := infra.GetDB(ctx, r.db)
+
 	var user entity.User
-	query := db.Model(&user).Where("id = ?", id).Limit(1)
-	err := query.Find(&user).Error
+	err := db.
+		Model(&user).
+		Where("id = ?", id).
+		Limit(1).
+		First(&user).
+		Error
+
 	if err != nil {
+		if errors.Is(err, gorm.ErrRecordNotFound) {
+			return user, utils.ErrUserNotFound
+		}
+
 		r.Logger.Error("Error query get user by id", zap.Error(err))
 		return user, err
 	}
+
 	return user, nil
 }
 
 func (r *userRepository) UpdateUser(ctx context.Context, id uint, u *entity.User) error {
 	db := infra.GetDB(ctx, r.db)
-	err := db.Model(&entity.Profile{}).
-    Where("id = ?", u.ID).
-    Updates(u).Error
-	if err != nil {
-		r.Logger.Error("Error query update user", zap.Error(err))
-		return err
+
+	result := db.Model(&entity.User{}).
+		Where("id = ?", u.ID).
+		Updates(u)
+
+	if result.Error != nil {
+		r.Logger.Error("Error query update user", zap.Error(result.Error))
+		return result.Error
 	}
+
+	if result.RowsAffected == 0 {
+		return utils.ErrUserNotFound
+	}
+
 	return nil
 }
 

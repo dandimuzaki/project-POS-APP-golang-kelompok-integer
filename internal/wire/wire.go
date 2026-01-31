@@ -54,21 +54,27 @@ func ApiV1(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCu
 
 func AuthRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCustom) {
 	r.POST("/login", handler.AuthHandler.Login)
-	r.POST("/logout", mw.AuthMiddleware(), handler.AuthHandler.Logout)
-	r.POST("/request-reset-password", mw.AuthMiddleware(), handler.AuthHandler.RequestResetPassword)
-	r.POST("/reset-password", mw.AuthMiddleware(), handler.AuthHandler.ResetPassword)
+
+	r.Use(mw.AuthMiddleware())
+	{
+		r.POST("/logout", handler.AuthHandler.Logout)
+		r.POST("/request-reset-password", handler.AuthHandler.RequestResetPassword)
+		r.POST("/reset-password", handler.AuthHandler.ResetPassword)
+	}
 }
 
 func UserRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCustom) {
-	r.GET("/", mw.AuthMiddleware(), mw.RequirePermission("superadmin", "admin"), handler.UserHandler.GetUserList)
-	r.POST("/", mw.AuthMiddleware(), mw.RequirePermission("superadmin", "admin"), handler.UserHandler.CreateUser)
-	r.PUT("/:id", mw.AuthMiddleware(), mw.RequirePermission("superadmin", "admin"), handler.UserHandler.UpdateRole)
-	r.DELETE("/:id", mw.AuthMiddleware(), mw.RequirePermission("superadmin", "admin"), handler.UserHandler.DeleteUser)
+	r.Use(mw.AuthMiddleware(), mw.RequirePermission("superadmin", "admin"))
+	r.GET("/", handler.UserHandler.GetUserList)
+	r.POST("/", handler.UserHandler.CreateUser)
+	r.PUT("/:id", handler.UserHandler.UpdateRole)
+	r.DELETE("/:id", handler.UserHandler.DeleteUser)
 }
 
 func ProfileRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCustom) {
-	r.GET("/", mw.AuthMiddleware(), handler.ProfileHandler.GetProfile)
-	r.PUT("/", mw.AuthMiddleware(), handler.ProfileHandler.UpdateProfile)
+	r.Use(mw.AuthMiddleware())
+	r.GET("/", handler.ProfileHandler.GetProfile)
+	r.PUT("/", handler.ProfileHandler.UpdateProfile)
 }
 
 func ReservationRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCustom) {
@@ -87,6 +93,7 @@ func ReservationRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.M
 }
 
 func InventoryRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCustom) {
+	r.Use(mw.AuthMiddleware(), mw.RequirePermission("superadmin", "admin", "staff"))
 	r.GET("/", mw.AuthMiddleware(), handler.InventoryLogHandler.GetInventoryLogs)
 	r.POST("/", mw.AuthMiddleware(), handler.InventoryLogHandler.CreateInventoryLog)
 }

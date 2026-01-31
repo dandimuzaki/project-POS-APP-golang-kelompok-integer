@@ -10,7 +10,11 @@ type ResetPasswordRequest struct {
 }
 
 type ResetPassword struct {
-	Email       string `json:"email" validate:"email"`
 	NewPassword string `json:"new_password"`
-	OTP         string `json:"otp"`
+	ResetToken  string `json:"reset_token"`
+}
+
+type ValidateOTP struct {
+	Email string `json:"email"`
+	OTP   string `json:"otp"`
 }

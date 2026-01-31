@@ -14,6 +14,7 @@ func AutoMigrate(db *gorm.DB) error {
 		&entity.Shift{},
 		&entity.OTP{},
 		&entity.Session{},
+		&entity.PasswordReset{},
 
 		// Menu
 		&entity.Category{},

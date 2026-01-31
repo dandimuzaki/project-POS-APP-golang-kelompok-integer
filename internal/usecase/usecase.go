@@ -22,7 +22,7 @@ func NewUsecase(tx TxManager, db *gorm.DB, repo *repository.Repository, log *zap
 		UserService:        NewUserService(tx, repo, log),
 		AuthService:        NewAuthService(tx, repo, log, config),
 		ProfileService: NewProfileService(tx, repo, log),
-		CategoryService: NewCategoryUsecase(repo),
+		CategoryService: NewCategoryUsecase(repo.CategoryRepo),
 		ReservationService: NewReservationService(tx, repo, log),
 		InventoryLogService: NewInventoryLogService(tx, repo, log),
 	}
