@@ -30,10 +30,10 @@ func main() {
 	}
 
 	// seeder
-	// err = data.SeedAll(db)
-	// if err != nil {
-	// 	log.Println(err)
-	// }
+	err = data.SeedAll(db)
+	if err != nil {
+		log.Println(err)
+	}
 
 	repo := repository.NewRepository(db, logger)
 	route := wire.Wiring(db, repo, logger, config)

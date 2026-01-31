@@ -31,7 +31,7 @@ func (r *profileRepository) GetProfileByID(ctx context.Context, id uint) (*entit
 	db := infra.GetDB(ctx, r.db)
 	var user entity.User
 	query := db.Model(&user).Where("id = ?", id).Limit(1).Preload("Profile")
-	err := query.Find(&user).Error
+	err := query.First(&user).Error
 	if err != nil {
 		r.Logger.Error("Error query get profile by id", zap.Error(err))
 		return &user, err
@@ -51,12 +51,19 @@ func (r *profileRepository) CreateProfile(ctx context.Context, profile *entity.P
 
 func (r *profileRepository) UpdateProfile(ctx context.Context, p *entity.Profile) error {
 	db := infra.GetDB(ctx, r.db)
-	err := db.Model(&entity.Profile{}).
-    Where("user_id = ?", p.UserID).
-    Updates(p).Error
-	if err != nil {
-		r.Logger.Error("Error query update profile", zap.Error(err))
-		return err
+
+	result := db.Model(&entity.Profile{}).
+		Where("user_id = ?", p.UserID).
+		Updates(p)
+
+	if result.Error != nil {
+		r.Logger.Error("Error query update profile", zap.Error(result.Error))
+		return result.Error
 	}
+
+	if result.RowsAffected == 0 {
+		return gorm.ErrRecordNotFound
+	}
+
 	return nil
 }

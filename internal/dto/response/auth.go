@@ -14,3 +14,7 @@ type OTPResponse struct {
 	OTPCode   string `json:"otp_code"`
 	ExpiresAt time.Time `json:"expires_at"`
 }
+
+type ResetTokenResponse struct {
+	ResetToken string `json:"reset_token"`
+}

@@ -122,27 +122,62 @@ func (s *authService) RequestResetPassword(ctx context.Context, email string) (*
 	return &res, nil
 }
 
-func (s *authService) ResetPassword(ctx context.Context, req request.ResetPassword) error {
+func (s *authService) ValidateOTP(ctx context.Context, req request.ValidateOTP) (*response.ResetTokenResponse, error) {
 	// Find user by email
 	user, err := s.repo.UserRepo.FindUserByEmail(ctx, req.Email)
 	if err != nil {
 		s.log.Error("Error find user by email", zap.Error(err))
-		return err
+		return nil, err
 	}
 
 	// Validate OTP
 	err = s.repo.OTPRepo.ValidateOTP(ctx, req.OTP)
 	if err != nil {
 		s.log.Error("Error validate OTP", zap.Error(err))
+		return nil, err
+	}
+
+	// Generate reset token
+	token, err := utils.GenerateRandomToken(16)
+	reset := entity.PasswordReset{
+		UserID: user.ID,
+		ResetTokenHash: utils.HashPassword(token.String()),
+		ExpiredAt: time.Now().Add(5 * time.Minute),
+		CreatedAt: time.Now(),
+	}
+	err = s.repo.PasswordResetRepo.CreateResetToken(ctx, reset)
+	if err != nil {
+		s.log.Error("Error create reset token", zap.Error(err))
+		return nil, err
+	}
+
+	res := response.ResetTokenResponse{
+		ResetToken: token.String(),
+	}
+
+	return &res, nil
+}
+
+func (s *authService) ResetPassword(ctx context.Context, req request.ResetPassword) error {
+	userID, err := s.repo.PasswordResetRepo.ValidateResetToken(ctx, req.ResetToken)
+	if err != nil {
+		s.log.Error("Error validate token", zap.Error(err))
 		return err
 	}
+
+	// Get user by id
+	user, err := s.repo.UserRepo.GetUserByID(ctx, *userID)
+	if err != nil {
+		s.log.Error("Error get user by id", zap.Error(err))
+		return err
+	}	
 
 	// Hash password
 	user.PasswordHash = utils.HashPassword(req.NewPassword)
 
 	err = s.tx.WithinTx(ctx, func(ctx context.Context) error {
 		// Update user password
-		e := s.repo.UserRepo.UpdateUser(ctx, user.ID, user)
+		e := s.repo.UserRepo.UpdateUser(ctx, user.ID, &user)
 		if e != nil {
 			return e
 		}

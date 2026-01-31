@@ -3,6 +3,9 @@ package utils
 import "errors"
 
 var (
+	// =============== ERROR AUTH ===============
+	ErrUserNotFound = errors.New("user not found")
+
 	// =============== ERROR RESERVATION ===============
 	ErrReservationNotFound     = errors.New("reservation not found")
 	ErrTableNotFound           = errors.New("table not found")
