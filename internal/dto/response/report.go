@@ -55,3 +55,14 @@ type PerHourRevenue struct {
 	Hour           string  `json:"hour"`
 	AverageRevenue float64 `json:"average_revenue"`
 }
+
+type ProductPerformance struct {
+	Name     string  `json:"name"`
+	Category string  `json:"category"`
+	Price    string  `json:"price"`
+	Stock    int64   `json:"stock"`
+	MinStock int64   `json:"min_stock"`
+	Status   string  `json:"status"`
+	Sales    int64   `json:"sales"`
+	Revenue  float64 `json:"revenue"`
+}

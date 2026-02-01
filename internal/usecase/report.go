@@ -13,6 +13,7 @@ import (
 type ReportService interface{
 	GetSales(ctx context.Context, f request.PeriodRequest) (*response.SalesResponse, error)
 	GetRevenue(ctx context.Context, f request.PeriodRequest) (*response.RevenueResponse, error)
+	GetProductPerformance(ctx context.Context, f request.PeriodRequest) ([]response.ProductPerformance, error)
 }
 
 type reportService struct {
@@ -147,4 +148,29 @@ func (s *reportService) GetRevenue(ctx context.Context, f request.PeriodRequest)
 	}
 
 	return &res, nil
+}
+
+func (s *reportService) GetProductPerformance(ctx context.Context, f request.PeriodRequest) ([]response.ProductPerformance, error) {
+	var query request.PeriodQuery
+	if f.From != "" {
+		from, _ := time.Parse("02-01-2006", f.From)
+		query.From = from
+	} else {
+		from, _ := time.Parse("02-01-2006", "01-01-2000")
+		query.From = from
+	}
+
+	if f.To != "" {
+		to, _ := time.Parse("02-01-2006", f.To)
+		query.To = to
+	} else {
+		query.To = time.Now()
+	}
+	
+	result, err := s.repo.ReportRepo.GetProductPerformance(ctx, query)
+	if err != nil {
+		s.log.Error("Error get product performance", zap.Error(err))
+		return nil, err
+	}
+	return result, nil
 }

@@ -59,6 +59,7 @@ func ApiV1(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCu
 	CategoryRoute(r.Group("/categories"), handler, mw)
 	ProductRoute(r.Group("/products"), handler, mw)
 	ReportRoute(r.Group("/report"), handler, mw)
+	PaymentRoute(r.Group("/"), handler, mw)
 }
 
 func AuthRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCustom) {
@@ -145,4 +146,10 @@ func ReportRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.Middle
 	r.Use(mw.RequirePermission("superadmin", "admin"))
 	r.GET("/sales", handler.ReportHandler.GetSales)
 	r.GET("/revenue", handler.ReportHandler.GetRevenue)
+	r.GET("/product", handler.ReportHandler.GetProductPerformance)
+}
+
+func PaymentRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCustom) {
+	r.Use(mw.AuthMiddleware())
+	r.GET("/payment-methods", handler.PaymentMethodHandler.GetAll)
 }

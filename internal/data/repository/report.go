@@ -22,6 +22,7 @@ type ReportRepository interface{
 	GetHourlyRevenue(ctx context.Context, f request.PeriodQuery) ([]response.PerHourRevenue, error)
 	GetDailyRevenue(ctx context.Context, f request.PeriodQuery) ([]response.DailyRevenue, error)
 	GetMonthlyRevenue(ctx context.Context, f request.PeriodQuery) ([]response.MonthlyRevenue, error)
+	GetProductPerformance(ctx context.Context, f request.PeriodQuery) ([]response.ProductPerformance, error)
 }
 
 type reportRepository struct {
@@ -209,6 +210,55 @@ func (r *reportRepository) GetMonthlyRevenue(ctx context.Context, f request.Peri
 	
 	if err != nil {
 		r.log.Error("Error get monthly revenue", zap.Error(err))
+		return nil, err
+	}
+
+	return results, err
+}
+
+func (r *reportRepository) GetProductPerformance(ctx context.Context, f request.PeriodQuery) ([]response.ProductPerformance, error) {
+	db := infra.GetDB(ctx, r.db)
+	var results []response.ProductPerformance
+	err := db.Model(&entity.Product{}).
+		Select(`
+			products.name AS name,
+			c.name AS category,
+			products.price,
+			products.stock,
+			products.min_stock,
+			CASE
+				WHEN products.stock < products.min_stock THEN 'low stock'
+				ELSE 'in stock'
+			END AS status,
+			COALESCE(SUM(oi.quantity), 0) AS sales,
+			COALESCE(SUM(oi.total_price), 0) AS revenue
+		`).
+		Joins("LEFT JOIN order_items oi ON oi.product_id = products.id").
+		Joins(`
+			LEFT JOIN orders o
+			ON oi.order_id = o.id
+			AND o.created_at > ?
+			AND o.created_at < ?
+			AND o.status = ?
+		`, f.From, f.To, entity.OrderStatusCompleted).
+		Joins("LEFT JOIN categories c ON products.category_id = c.id").
+		Group(`
+			products.name,
+			c.name,
+			products.price,
+			products.stock,
+			products.min_stock,
+			CASE
+				WHEN products.stock < products.min_stock THEN 'low stock'
+				ELSE 'in stock'
+			END
+		`).
+		Order("products.name DESC").
+		Scan(&results).Error
+
+	
+	if err != nil {
+		r.log.Error("Error get product performance", zap.Error(err))
 		return nil, err
 	}
 

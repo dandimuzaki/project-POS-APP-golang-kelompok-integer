@@ -51,3 +51,18 @@ func (h *ReportHandler) GetRevenue(c *gin.Context) {
 
 	utils.ResponseSuccess(c, http.StatusOK, "get revenue report success", result)
 }
+
+func (h *ReportHandler) GetProductPerformance(c *gin.Context) {
+	f := request.PeriodRequest{
+		From: c.Query("from"),
+		To: c.Query("to"),
+	}
+
+	result, err := h.service.GetProductPerformance(c, f)
+	if err != nil {
+		utils.ResponseFailed(c, http.StatusInternalServerError, "get product performance failed", nil)
+		return
+	}
+
+	utils.ResponseSuccess(c, http.StatusOK, "get product performance success", result)
+}

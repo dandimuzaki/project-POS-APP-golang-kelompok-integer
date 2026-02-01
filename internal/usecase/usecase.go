@@ -15,6 +15,7 @@ type Usecase struct {
 	InventoryLogService InventoryLogService
 	ProductService      ProductService
 	ReportService ReportService
+	PaymentMethodService PaymentMethodService
 }
 
 func NewUsecase(tx TxManager, repo *repository.Repository, log *zap.Logger, email EmailSender) *Usecase {
@@ -27,5 +28,6 @@ func NewUsecase(tx TxManager, repo *repository.Repository, log *zap.Logger, emai
 		ReservationService:  NewReservationService(tx, repo, log),
 		InventoryLogService: NewInventoryLogService(tx, repo, log),
 		ReportService: NewReportService(tx, repo, log),
+		PaymentMethodService: NewPaymentMethodService(tx, repo, log),
 	}
 }
