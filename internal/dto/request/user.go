@@ -7,12 +7,26 @@ type UserFilterRequest struct {
 	Email string `form:"email"`
 }
 
-type UserRequest struct {
-	Email string `json:"email" validate:"email"`
-	Role  string `json:"role"`
+type CreateUserRequest struct {
+	Email             string  `json:"email" validate:"email"`
+	Role              string  `json:"role"`
+	FullName          string  `json:"full_name"`
+	Phone             string  `json:"phone"`
+	DateOfBirth       string  `json:"date_of_birth"`
+	Salary            float64 `json:"salary"`
+	ProfileImageURL   string  `json:"profile_image_url"`
+	Address           string  `json:"address"`
+	AdditionalDetails string  `json:"additional_details,omitempty"`
 }
 
 type UpdateUserRequest struct {
-	ID   uint   `json:"id"`
-	Role string `json:"role"`
+	Email             string  `json:"email" validate:"email"`
+	Role              string  `json:"role"`
+	FullName          string  `json:"full_name"`
+	Phone             string  `json:"phone"`
+	DateOfBirth       string  `json:"date_of_birth"`
+	Salary            float64 `json:"salary"`
+	ProfileImageURL   string  `json:"profile_image_url"`
+	Address           string  `json:"address"`
+	AdditionalDetails string  `json:"additional_details,omitempty"`
 }

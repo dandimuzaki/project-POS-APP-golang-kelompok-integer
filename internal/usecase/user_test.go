@@ -10,6 +10,7 @@ import (
 	"project-POS-APP-golang-integer/internal/mocks"
 	"project-POS-APP-golang-integer/pkg/utils"
 	"testing"
+	"time"
 
 	"github.com/stretchr/testify/assert"
 	"github.com/stretchr/testify/mock"
@@ -94,17 +95,35 @@ func TestUserService_CreateUser_Success(t *testing.T) {
 
 	log := zap.NewNop()
 	emailSender := new(mocks.EmailSenderMock)
+	emailSender.
+	On(
+		"Send",
+		mock.Anything, // context
+		mock.Anything, // EmailRequest (password is random!)
+	).
+	Return(nil).
+	Once()
+
 	service := NewUserService(tx, &repo, log, emailSender)
 
-	req := request.UserRequest{
+	req := request.CreateUserRequest{
 		Email: "test@mail.com",
 		Role:  "admin",
+		FullName: "Test Admin",
+		DateOfBirth: "02-01-2006",
 	}
 
 	createdUser := &entity.User{
 		ID:    1,
 		Email: req.Email,
 		Role:  entity.RoleAdmin,
+	}
+
+	birthday, err := time.Parse("02-01-2006", req.DateOfBirth)
+	createdProfile := &entity.Profile{
+		UserID: 1,
+		FullName: req.FullName,
+		DateOfBirth: birthday,
 	}
 
 	tx.
@@ -117,14 +136,15 @@ func TestUserService_CreateUser_Success(t *testing.T) {
 
 	profileRepo.
 		On("CreateProfile", mock.Anything, mock.AnythingOfType("*entity.Profile")).
-		Return(&entity.Profile{}, nil)
+		Return(createdProfile, nil)
 
 	res, err := service.CreateUser(ctx, req)
 
 	assert.NoError(t, err)
 	assert.Equal(t, req.Email, res.Email)
 	assert.Equal(t, entity.RoleAdmin, res.Role)
-	assert.NotEmpty(t, res.Password) // generated password
+	assert.Equal(t, req.FullName, res.FullName)
+	assert.NotEmpty(t, res.Password)
 
 	userRepo.AssertExpectations(t)
 	profileRepo.AssertExpectations(t)
@@ -147,10 +167,14 @@ func TestUserService_CreateUser_UserRepoError(t *testing.T) {
 	emailSender := new(mocks.EmailSenderMock)
 	service := NewUserService(tx, &repo, log, emailSender)
 
-	req := request.UserRequest{
+	req := request.CreateUserRequest{
 		Email: "test@mail.com",
 		Role:  "admin",
+		FullName: "Test Admin",
+		DateOfBirth: "02-01-2006",
 	}
+
+	_, err := time.Parse("02-01-2006", req.DateOfBirth)
 
 	expectedErr := errors.New("db error")
 
@@ -188,10 +212,14 @@ func TestUserService_CreateUser_ProfileRepoError(t *testing.T) {
 	emailSender := new(mocks.EmailSenderMock)
 	service := NewUserService(tx, &repo, log, emailSender)
 
-	req := request.UserRequest{
+	req := request.CreateUserRequest{
 		Email: "test@mail.com",
 		Role:  "admin",
+		FullName: "Test Admin",
+		DateOfBirth: "02-01-2006",
 	}
+
+	birthday, err := time.Parse("02-01-2006", req.DateOfBirth)
 
 	tx.On("WithinTx", mock.Anything).Return(nil)
 
@@ -202,6 +230,12 @@ func TestUserService_CreateUser_ProfileRepoError(t *testing.T) {
 		PasswordHash: "123",
 	}
 
+	createdProfile := &entity.Profile{
+		UserID: 1,
+		FullName: req.FullName,
+		DateOfBirth: birthday,
+	}
+
 	userRepo.
 		On("CreateUser", mock.Anything, mock.AnythingOfType("*entity.User")).
 		Return(createdUser, nil)
@@ -210,7 +244,7 @@ func TestUserService_CreateUser_ProfileRepoError(t *testing.T) {
 
 	profileRepo.
 		On("CreateProfile", mock.Anything, mock.AnythingOfType("*entity.Profile")).
-		Return((*entity.Profile)(nil), expectedErr)
+		Return(createdProfile, expectedErr)
 
 	res, err := service.CreateUser(ctx, req)
 

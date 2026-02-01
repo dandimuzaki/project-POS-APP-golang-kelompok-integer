@@ -8,6 +8,7 @@ import (
 	"project-POS-APP-golang-integer/internal/dto/response"
 	"project-POS-APP-golang-integer/pkg/utils"
 	content "project-POS-APP-golang-integer/pkg/utils/email"
+	"time"
 
 	"go.uber.org/zap"
 )
@@ -16,8 +17,8 @@ type UserService interface{
 	GetUserList(ctx context.Context, req request.UserFilterRequest) (*response.PaginatedResponse[response.UserResponse], error)
 	GetUserByID(ctx context.Context, id uint) (entity.User, error)
 	FindUserByEmail(ctx context.Context, email string) (*entity.User, error)
-	CreateUser(ctx context.Context, req request.UserRequest) (*response.CreateUserResponse, error)
-	UpdateRole(ctx context.Context, req request.UpdateUserRequest) error
+	CreateUser(ctx context.Context, req request.CreateUserRequest) (*response.CreateUserResponse, error)
+	UpdateUser(ctx context.Context, id uint, req request.UpdateUserRequest) error
 	DeleteUser(ctx context.Context, id uint) error
 }
 
@@ -88,16 +89,32 @@ func (s *userService) FindUserByEmail(ctx context.Context, email string) (*entit
 	return user, nil
 }
 
-func (s *userService) CreateUser(ctx context.Context, req request.UserRequest) (*response.CreateUserResponse, error) {
+func (s *userService) CreateUser(ctx context.Context, req request.CreateUserRequest) (*response.CreateUserResponse, error) {
 	password, _ := utils.GenerateRandomString(10)
 	user := entity.User{
 		Email: req.Email,
 		Role: entity.UserRole(req.Role),
 		PasswordHash: utils.HashPassword(password),
 	}
+	
+	birthday, err := time.Parse("02-01-2006", req.DateOfBirth)
+	if err != nil {
+		s.log.Error("Invalid time format", zap.Error(err))
+		return nil, utils.ErrInvalidDateFormat
+	}
+	profile := entity.Profile{
+		FullName: req.FullName,
+		Phone: req.Phone,
+		DateOfBirth: birthday,
+		Salary: req.Salary,
+		ProfileImageURL: req.ProfileImageURL,
+		Address: req.Address,
+		AdditionalDetails: req.AdditionalDetails,
+	}
+
 	var createdUser *entity.User
-	var profile entity.Profile
-	err := s.tx.WithinTx(ctx, func(ctx context.Context) error {
+	var createdProfile *entity.Profile
+	err = s.tx.WithinTx(ctx, func(ctx context.Context) error {
 		// Create user
 		result, e := s.repo.UserRepo.CreateUser(ctx, &user)
 		if e != nil {
@@ -107,10 +124,11 @@ func (s *userService) CreateUser(ctx context.Context, req request.UserRequest) (
 
 		// Automatically create empty profile
 		profile.UserID = createdUser.ID
-		_, e = s.repo.ProfileRepo.CreateProfile(ctx, &profile)
+		p, e := s.repo.ProfileRepo.CreateProfile(ctx, &profile)
 		if e != nil {
 			return e
 		}
+		createdProfile = p
 		
 		return nil
 	})
@@ -124,6 +142,13 @@ func (s *userService) CreateUser(ctx context.Context, req request.UserRequest) (
 		Email: createdUser.Email,
 		Role: createdUser.Role,
 		Password: password,
+		FullName: createdProfile.FullName,
+		Phone: createdProfile.Phone,
+		DateOfBirth: createdProfile.DateOfBirth.Format("02-01-2006"),
+		Salary: createdProfile.Salary,
+		ProfileImageURL: createdProfile.ProfileImageURL,
+		Address: createdProfile.Address,
+		AdditionalDetails: createdProfile.AdditionalDetails,
 	}
 
 	err = s.email.Send(ctx, request.EmailRequest{
@@ -139,18 +164,52 @@ func (s *userService) CreateUser(ctx context.Context, req request.UserRequest) (
 	return &res, err
 }
 
-func (s *userService) UpdateRole(ctx context.Context, req request.UpdateUserRequest) error {
-	user, err := s.repo.UserRepo.GetUserByID(ctx, req.ID)
+func (s *userService) UpdateUser(ctx context.Context, id uint, req request.UpdateUserRequest) error {
+	user, err := s.repo.UserRepo.GetUserByID(ctx, id)
 	if err != nil {
 		s.log.Error("Error get user by id", zap.Error(err))
 		return err
 	}
 	
-	// Update user role
+	// Update user
+	user.Email = req.Email
 	user.Role = entity.UserRole(req.Role)
-	err = s.repo.UserRepo.UpdateUser(ctx, req.ID, &user)
+	// Update profile
+	birthday, err := time.Parse("02-01-2006", req.DateOfBirth)
 	if err != nil {
-		s.log.Error("Error update user", zap.Error(err))
+		s.log.Error("Invalid time format", zap.Error(err))
+		return utils.ErrInvalidDateFormat
+	}
+	// Update profile
+	profile := entity.Profile{
+		UserID: user.ID,
+		FullName: req.FullName,
+		Phone: req.Phone,
+		DateOfBirth: birthday,
+		Salary: req.Salary,
+		ProfileImageURL: req.ProfileImageURL,
+		Address: req.Address,
+		AdditionalDetails: req.AdditionalDetails,
+	}
+
+	err = s.tx.WithinTx(ctx, func(ctx context.Context) error {
+		// Update user
+		e := s.repo.UserRepo.UpdateUser(ctx, id, &user)
+		if e != nil {
+			return e
+		}
+
+		// Automatically update profile
+		e = s.repo.ProfileRepo.UpdateProfile(ctx, &profile)
+		if e != nil {
+			return e
+		}
+		
+		return nil
+	})
+
+	if err != nil {
+		s.log.Error("Error update user transaction", zap.Error(err))
 		return err
 	}
 

@@ -33,3 +33,9 @@
 {"level":"info","timestamp":"2026-01-31T20:51:39.340+0700","caller":"usecase/category.go:113","msg":"Creating new category","service":"category","name":"Appetizer"}
 {"level":"info","timestamp":"2026-01-31T20:51:39.432+0700","caller":"usecase/category.go:140","msg":"Category created successfully","service":"category","id":6,"name":"Appetizer"}
 {"level":"info","timestamp":"2026-01-31T20:51:39.434+0700","caller":"adaptor/category.go:179","msg":"Category created successfully","handler":"category","category_id":6}
+{"level":"info","timestamp":"2026-01-31T21:07:06.602+0700","caller":"utils/email.go:36","msg":"integer.lumoshive@gmail.com"}
+{"level":"info","timestamp":"2026-01-31T21:07:06.635+0700","caller":"utils/email.go:37","msg":"ihzhabaihaqqi05@gmail.com"}
+{"level":"info","timestamp":"2026-01-31T21:07:09.527+0700","caller":"utils/email.go:42","msg":"Email send successfully"}
+{"level":"info","timestamp":"2026-01-31T21:07:11.484+0700","caller":"utils/email.go:36","msg":"integer.lumoshive@gmail.com"}
+{"level":"info","timestamp":"2026-01-31T21:07:11.485+0700","caller":"utils/email.go:37","msg":"raflitbl1724@gmail.com"}
+{"level":"info","timestamp":"2026-01-31T21:07:14.186+0700","caller":"utils/email.go:42","msg":"Email send successfully"}

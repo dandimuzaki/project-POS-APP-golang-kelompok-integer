@@ -65,7 +65,7 @@ func TestProfileRepository_CreateProfile_Error(t *testing.T) {
 	}
 }
 
-func TestProfileRepository_GetProfileByID_Success(t *testing.T) {
+func TestProfileRepository_GetProfileByUserID_Success(t *testing.T) {
 	db, cleanup := setupTestDB(t)
 	defer cleanup()
 
@@ -86,7 +86,7 @@ func TestProfileRepository_GetProfileByID_Success(t *testing.T) {
 	}
 	db.Create(&profile)
 
-	result, err := repo.GetProfileByID(ctx, user.ID)
+	result, err := repo.GetProfileByUserID(ctx, user.ID)
 
 	if err != nil {
 		t.Fatalf("expected no error, got %v", err)
@@ -97,14 +97,14 @@ func TestProfileRepository_GetProfileByID_Success(t *testing.T) {
 	}
 }
 
-func TestProfileRepository_GetProfileByID_NotFound(t *testing.T) {
+func TestProfileRepository_GetProfileByUserID_NotFound(t *testing.T) {
 	db, cleanup := setupTestDB(t)
 	defer cleanup()
 
 	logger := zap.NewNop()
 	repo := NewProfileRepo(db, logger)
 
-	_, err := repo.GetProfileByID(context.Background(), 999)
+	_, err := repo.GetProfileByUserID(context.Background(), 999)
 
 	if err == nil {
 		t.Fatalf("expected error, got nil")

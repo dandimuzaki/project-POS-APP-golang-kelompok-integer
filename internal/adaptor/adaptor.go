@@ -15,6 +15,7 @@ type Handler struct {
 	InventoryLogHandler InventoryLogHandler
 	CategoryHandler     CategoryHandler
 	ProductHandler      ProductHandler
+	ReportHandler ReportHandler
 }
 
 func NewHandler(u *usecase.Usecase, log *zap.Logger, config utils.Configuration) Handler {
@@ -26,5 +27,6 @@ func NewHandler(u *usecase.Usecase, log *zap.Logger, config utils.Configuration)
 		InventoryLogHandler: NewInventoryLogHandler(u.InventoryLogService, log, config),
 		CategoryHandler:     *NewCategoryHandler(u.CategoryService, log),
 		ProductHandler:      *NewProductHandler(u.ProductService, log),
+		ReportHandler: NewReportHandler(u.ReportService, log),
 	}
 }

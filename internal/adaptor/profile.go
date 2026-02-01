@@ -24,8 +24,8 @@ func NewProfileHandler(service usecase.ProfileService, log *zap.Logger, config u
 	}
 }
 
-func (h *ProfileHandler) GetProfile(c *gin.Context) {
-	result, err := h.service.GetProfile(c)
+func (h *ProfileHandler) GetPersonalProfile(c *gin.Context) {
+	result, err := h.service.GetPersonalProfile(c)
 	if err != nil {
 		utils.ResponseFailed(c, http.StatusBadGateway, "get profile failed", nil)
 		return

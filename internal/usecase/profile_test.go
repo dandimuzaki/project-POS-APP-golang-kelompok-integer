@@ -40,11 +40,11 @@ func TestProfileService_GetProfile_Success(t *testing.T) {
 	}
 
 	mockRepo.
-		On("GetProfileByID", ctx, uint(1)).
+		On("GetProfileByUserID", ctx, uint(1)).
 		Return(mockUser, nil).
 		Once()
 
-	result, err := service.GetProfile(ctx)
+	result, err := service.GetPersonalProfile(ctx)
 
 	require.NoError(err)
 	require.NotNil(result)
@@ -68,11 +68,11 @@ func TestProfileService_GetProfile_Error(t *testing.T) {
 	ctx := context.WithValue(context.Background(), "user_id", uint(1))
 
 	mockRepo.
-		On("GetProfileByID", ctx, uint(1)).
+		On("GetProfileByUserID", ctx, uint(1)).
 		Return((*entity.User)(nil), errors.New("db error")).
 		Once()
 
-	result, err := service.GetProfile(ctx)
+	result, err := service.GetPersonalProfile(ctx)
 
 	require.Error(err)
 	require.Nil(result)

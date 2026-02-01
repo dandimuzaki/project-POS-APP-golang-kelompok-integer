@@ -58,6 +58,7 @@ func ApiV1(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCu
 	InventoryRoute(r.Group("/inventories"), handler, mw)
 	CategoryRoute(r.Group("/categories"), handler, mw)
 	ProductRoute(r.Group("/products"), handler, mw)
+	ReportRoute(r.Group("/report"), handler, mw)
 }
 
 func AuthRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCustom) {
@@ -82,7 +83,7 @@ func UserRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.Middlewa
 
 func ProfileRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCustom) {
 	r.Use(mw.AuthMiddleware())
-	r.GET("/", handler.ProfileHandler.GetProfile)
+	r.GET("/", handler.ProfileHandler.GetPersonalProfile)
 	r.PUT("/", handler.ProfileHandler.UpdateProfile)
 }
 
@@ -137,4 +138,11 @@ func ProductRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.Middl
 	protected.POST("", handler.ProductHandler.CreateProduct)
 	protected.PUT("/:id", handler.ProductHandler.UpdateProduct)
 	protected.DELETE("/:id", handler.ProductHandler.DeleteProduct)
+}
+
+func ReportRoute(r *gin.RouterGroup, handler *adaptor.Handler, mw mCustom.MiddlewareCustom) {
+	r.Use(mw.AuthMiddleware())
+	r.Use(mw.RequirePermission("superadmin", "admin"))
+	r.GET("/sales", handler.ReportHandler.GetSales)
+	r.GET("/revenue", handler.ReportHandler.GetRevenue)
 }

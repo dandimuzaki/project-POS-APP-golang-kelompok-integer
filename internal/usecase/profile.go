@@ -12,7 +12,7 @@ import (
 )
 
 type ProfileService interface {
-	GetProfile(ctx context.Context) (*response.ProfileResponse, error)
+	GetPersonalProfile(ctx context.Context) (*response.ProfileResponse, error)
 	UpdateProfile(ctx context.Context, data *request.ProfileRequest) error
 }
 
@@ -30,9 +30,9 @@ func NewProfileService(tx TxManager, repo *repository.Repository, log *zap.Logge
 	}
 }
 
-func (s *profileService) GetProfile(ctx context.Context) (*response.ProfileResponse, error) {
+func (s *profileService) GetPersonalProfile(ctx context.Context) (*response.ProfileResponse, error) {
 	userID := ctx.Value("user_id").(uint)
-	profile, err := s.repo.ProfileRepo.GetProfileByID(ctx, userID)
+	profile, err := s.repo.ProfileRepo.GetProfileByUserID(ctx, userID)
 	if err != nil {
 		s.log.Error("Error get profile", zap.Error(err))
 		return nil, err

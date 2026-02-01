@@ -12,7 +12,7 @@ type ProfileRepoMock struct {
 	mock.Mock
 }
 
-func (m *ProfileRepoMock) GetProfileByID(ctx context.Context, id uint) (*entity.User, error) {
+func (m *ProfileRepoMock) GetProfileByUserID(ctx context.Context, id uint) (*entity.User, error) {
 	args := m.Called(ctx, id)
 	return args.Get(0).(*entity.User), args.Error(1)
 }

@@ -51,7 +51,7 @@ func (h *UserHandler) GetUserList(c *gin.Context) {
 }
 
 func (h *UserHandler) CreateUser(c *gin.Context) {
-	var req request.UserRequest
+	var req request.CreateUserRequest
 	if err := c.ShouldBindJSON(&req); err != nil {
 		utils.ResponseFailed(c, http.StatusBadRequest, "invalid request", err)
 		return
@@ -99,7 +99,8 @@ func (h *UserHandler) UpdateRole(c *gin.Context) {
 		return
 	}
 
-	err = h.service.UpdateRole(c.Request.Context(), req)
+	userID := c.Value("user_id").(uint)
+	err = h.service.UpdateUser(c, userID, req)
 	if err != nil {
 		utils.ResponseFailed(c, http.StatusBadRequest, "update user failed", err)
 		return
