@@ -55,7 +55,7 @@ func (h *ProductHandler) CreateProduct(c *gin.Context) {
 	}
 
 	// Call service
-	product, err := h.srv.CreateProduct(req)
+	product, err := h.srv.CreateProduct(c, req)
 	if err != nil {
 		h.log.Error("Failed to create product", zap.Error(err))
 
@@ -170,7 +170,7 @@ func (h *ProductHandler) GetAllProducts(c *gin.Context) {
 		zap.String("client_ip", c.ClientIP()))
 
 	// Call service
-	result, err := h.srv.GetAllProducts(req)
+	result, err := h.srv.GetAllProducts(c, req)
 	if err != nil {
 		h.log.Error("Failed to get products", zap.Error(err))
 		utils.ResponseFailed(c, 500, "Failed to retrieve products", nil)
@@ -214,7 +214,7 @@ func (h *ProductHandler) GetProductByID(c *gin.Context) {
 	}
 
 	// Call service
-	product, err := h.srv.GetProductByID(uint(id))
+	product, err := h.srv.GetProductByID(c, uint(id))
 	if err != nil {
 		h.log.Error("Failed to get product", zap.Uint("id", uint(id)), zap.Error(err))
 
@@ -276,7 +276,7 @@ func (h *ProductHandler) UpdateProduct(c *gin.Context) {
 	}
 
 	// Call service
-	product, err := h.srv.UpdateProduct(uint(id), req)
+	product, err := h.srv.UpdateProductInfo(c, uint(id), req)
 	if err != nil {
 		h.log.Error("Failed to update product",
 			zap.Uint("id", uint(id)),
@@ -325,7 +325,7 @@ func (h *ProductHandler) DeleteProduct(c *gin.Context) {
 	}
 
 	// Call service
-	if err := h.srv.DeleteProduct(uint(id)); err != nil {
+	if err := h.srv.DeleteProduct(c, uint(id)); err != nil {
 		h.log.Error("Failed to delete product", zap.Uint("id", uint(id)), zap.Error(err))
 
 		if err == utils.ErrProductNotFound {

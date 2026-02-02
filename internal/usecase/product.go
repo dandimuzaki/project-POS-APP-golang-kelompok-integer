@@ -1,6 +1,7 @@
 package usecase
 
 import (
+	"context"
 	"project-POS-APP-golang-integer/internal/data/entity"
 	"project-POS-APP-golang-integer/internal/data/repository"
 	"project-POS-APP-golang-integer/internal/dto/request"
@@ -11,20 +12,20 @@ import (
 )
 
 type ProductService interface {
-	CreateProduct(req request.CreateProductRequest) (*response.ProductResponse, error)
-	GetAllProducts(req request.GetProductsRequest) (*response.ProductListResponse, error) // INI!
-	GetProductByID(id uint) (*response.ProductResponse, error)
-	UpdateProduct(id uint, req request.UpdateProductRequest) (*response.ProductResponse, error)
-	DeleteProduct(id uint) error
+	CreateProduct(ctx context.Context, req request.CreateProductRequest) (*response.ProductResponse, error)
+	GetAllProducts(ctx context.Context, req request.GetProductsRequest) (*response.ProductListResponse, error) // INI!
+	GetProductByID(ctx context.Context, id uint) (*response.ProductResponse, error)
+	UpdateProductInfo(ctx context.Context, id uint, req request.UpdateProductRequest) (*response.ProductResponse, error)
+	DeleteProduct(ctx context.Context, id uint) error
 }
 
-func (s *productService) GetAllProducts(req request.GetProductsRequest) (*response.ProductListResponse, error) {
+func (s *productService) GetAllProducts(ctx context.Context, req request.GetProductsRequest) (*response.ProductListResponse, error) {
 	s.log.Info("Getting products with filters",
 		zap.Int("page", req.Page),
 		zap.Int("limit", req.Limit))
 
 	// Get products with filters dari repository
-	products, total, err := s.productRepo.FindAllWithFilter(req)
+	products, total, err := s.productRepo.FindAllWithFilter(ctx, req)
 	if err != nil {
 		s.log.Error("Failed to get products", zap.Error(err))
 		return nil, err
@@ -81,7 +82,7 @@ func NewProductService(
 	}
 }
 
-func (s *productService) CreateProduct(req request.CreateProductRequest) (*response.ProductResponse, error) {
+func (s *productService) CreateProduct(ctx context.Context, req request.CreateProductRequest) (*response.ProductResponse, error) {
 	s.log.Info("Creating new product", zap.String("name", req.Name))
 
 	// Validate category exists
@@ -96,7 +97,7 @@ func (s *productService) CreateProduct(req request.CreateProductRequest) (*respo
 	}
 
 	// Check for duplicate product name in same category
-	existingProduct, err := s.productRepo.FindByNameAndCategory(req.Name, req.CategoryID)
+	existingProduct, err := s.productRepo.FindByNameAndCategory(ctx, req.Name, req.CategoryID)
 	if err != nil {
 		s.log.Error("Failed to check existing product", zap.Error(err))
 		return nil, err
@@ -126,7 +127,7 @@ func (s *productService) CreateProduct(req request.CreateProductRequest) (*respo
 		CategoryID:  req.CategoryID,
 	}
 
-	err = s.productRepo.Create(product)
+	err = s.productRepo.Create(ctx, product)
 	if err != nil {
 		s.log.Error("Failed to create product in repository", zap.Error(err))
 		return nil, err
@@ -142,10 +143,10 @@ func (s *productService) CreateProduct(req request.CreateProductRequest) (*respo
 	return response.ToProductResponse(product), nil
 }
 
-func (s *productService) GetProductByID(id uint) (*response.ProductResponse, error) {
+func (s *productService) GetProductByID(ctx context.Context, id uint) (*response.ProductResponse, error) {
 	s.log.Debug("Getting product by ID", zap.Uint("id", id))
 
-	product, err := s.productRepo.FindByID(id)
+	product, err := s.productRepo.FindByID(ctx, id)
 	if err != nil {
 		s.log.Error("Failed to get product from repository", zap.Error(err))
 		return nil, err
@@ -160,11 +161,11 @@ func (s *productService) GetProductByID(id uint) (*response.ProductResponse, err
 	return response.ToProductResponse(product), nil
 }
 
-func (s *productService) UpdateProduct(id uint, req request.UpdateProductRequest) (*response.ProductResponse, error) {
+func (s *productService) UpdateProductInfo(ctx context.Context, id uint, req request.UpdateProductRequest) (*response.ProductResponse, error) {
 	s.log.Info("Updating product", zap.Uint("id", id))
 
 	// Get existing product
-	product, err := s.productRepo.FindByID(id)
+	product, err := s.productRepo.FindByID(ctx, id)
 	if err != nil {
 		s.log.Error("Failed to get product for update", zap.Error(err))
 		return nil, err
@@ -193,7 +194,7 @@ func (s *productService) UpdateProduct(id uint, req request.UpdateProductRequest
 
 	// Check for duplicate name if name is being changed
 	if req.Name != "" && req.Name != product.Name {
-		existingProduct, err := s.productRepo.FindByNameAndCategory(req.Name, product.CategoryID)
+		existingProduct, err := s.productRepo.FindByNameAndCategory(ctx, req.Name, product.CategoryID)
 		if err != nil {
 			s.log.Error("Failed to check existing product name", zap.Error(err))
 			return nil, err
@@ -233,7 +234,7 @@ func (s *productService) UpdateProduct(id uint, req request.UpdateProductRequest
 		return nil, utils.ErrNoChangesProvided
 	}
 
-	err = s.productRepo.Update(product)
+	err = s.productRepo.UpdateProductInfo(ctx, id, product)
 	if err != nil {
 		s.log.Error("Failed to update product in repository", zap.Error(err))
 		return nil, err
@@ -243,11 +244,11 @@ func (s *productService) UpdateProduct(id uint, req request.UpdateProductRequest
 	return response.ToProductResponse(product), nil
 }
 
-func (s *productService) DeleteProduct(id uint) error {
+func (s *productService) DeleteProduct(ctx context.Context, id uint) error {
 	s.log.Info("Deleting product", zap.Uint("id", id))
 
 	// Check if product exists
-	product, err := s.productRepo.FindByID(id)
+	product, err := s.productRepo.FindByID(ctx, id)
 	if err != nil {
 		s.log.Error("Failed to get product for deletion", zap.Error(err))
 		return err
@@ -259,7 +260,7 @@ func (s *productService) DeleteProduct(id uint) error {
 	}
 
 	// Check if product has order items
-	hasOrderItems, err := s.productRepo.CheckHasOrderItems(id)
+	hasOrderItems, err := s.productRepo.CheckHasOrderItems(ctx, id)
 	if err != nil {
 		s.log.Error("Failed to check product order items", zap.Error(err))
 		return err
@@ -271,7 +272,7 @@ func (s *productService) DeleteProduct(id uint) error {
 	}
 
 	// Perform soft delete
-	err = s.productRepo.SoftDelete(id)
+	err = s.productRepo.SoftDelete(ctx, id)
 	if err != nil {
 		s.log.Error("Failed to delete product from repository", zap.Error(err))
 		return err

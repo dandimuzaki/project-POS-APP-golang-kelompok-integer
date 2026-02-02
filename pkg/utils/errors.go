@@ -39,6 +39,7 @@ var (
 	ErrProductInactive   = errors.New("product is inactive")
 	ErrProductOutOfStock = errors.New("product is out of stock")
 	ErrInsufficientStock = errors.New("insufficient stock")
+	ErrInvalidQuantity = errors.New("invalid quantity")
 )
 
 // Helper untuk check business error

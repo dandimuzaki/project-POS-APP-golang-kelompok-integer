@@ -1,10 +1,12 @@
 package repository
 
 import (
+	"context"
 	"errors"
 	"fmt"
 	"project-POS-APP-golang-integer/internal/data/entity"
 	"project-POS-APP-golang-integer/internal/dto/request"
+	"project-POS-APP-golang-integer/internal/infra"
 	"project-POS-APP-golang-integer/pkg/utils"
 	"strings"
 
@@ -13,19 +15,22 @@ import (
 )
 
 type ProductRepository interface {
-	Create(product *entity.Product) error
-	FindByID(id uint) (*entity.Product, error)
+	Create(ctx context.Context, product *entity.Product) error
+	FindByID(ctx context.Context, id uint) (*entity.Product, error)
+	UpdateProductInfo(ctx context.Context, id uint, data *entity.Product) error
+	IncreaseStock(ctx context.Context, productID uint, qty int) error
+	DecreaseStock(ctx context.Context, productID uint, qty int) error
 	Update(product *entity.Product) error
-	SoftDelete(id uint) error
-	CheckHasOrderItems(id uint) (bool, error)
-	FindByNameAndCategory(name string, categoryID uint) (*entity.Product, error)
-	FindAllWithFilter(req request.GetProductsRequest) ([]entity.Product, int64, error) // 🔥 TAMBAH
-	GetSoldCount(productID uint) (int64, error)                                        // 🔥 TAMBAH
+	SoftDelete(ctx context.Context, id uint) error
+	CheckHasOrderItems(ctx context.Context, id uint) (bool, error)
+	FindByNameAndCategory(ctx context.Context, name string, categoryID uint) (*entity.Product, error)
+	FindAllWithFilter(ctx context.Context, req request.GetProductsRequest) ([]entity.Product, int64, error) // 🔥 TAMBAH
+	GetSoldCount(ctx context.Context, productID uint) (int64, error)                                        // 🔥 TAMBAH
 }
 
 type productRepository struct {
 	db  *gorm.DB
-	log *zap.Logger // 🔥 FIX: lowercase log untuk konsisten
+	log *zap.Logger
 }
 
 func NewProductRepository(db *gorm.DB, log *zap.Logger) ProductRepository {
@@ -35,16 +40,18 @@ func NewProductRepository(db *gorm.DB, log *zap.Logger) ProductRepository {
 	}
 }
 
-func (r *productRepository) Create(product *entity.Product) error {
+func (r *productRepository) Create(ctx context.Context, product *entity.Product) error {
+	db := infra.GetDB(ctx, r.db)
 	r.log.Debug("Creating product", zap.String("name", product.Name))
-	return r.db.Create(product).Error
+	return db.Create(product).Error
 }
 
-func (r *productRepository) FindByID(id uint) (*entity.Product, error) {
+func (r *productRepository) FindByID(ctx context.Context, id uint) (*entity.Product, error) {
+	db := infra.GetDB(ctx, r.db)
 	r.log.Debug("Finding product by ID", zap.Uint("id", id))
 
 	var product entity.Product
-	err := r.db.Preload("Category").Where("id = ? AND deleted_at IS NULL", id).First(&product).Error
+	err := db.Preload("Category").Where("id = ? AND deleted_at IS NULL", id).First(&product).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			r.log.Debug("Product not found", zap.Uint("id", id))
@@ -58,15 +65,97 @@ func (r *productRepository) FindByID(id uint) (*entity.Product, error) {
 	return &product, nil
 }
 
+func (r *productRepository) UpdateProductInfo(
+	ctx context.Context,
+	id uint,
+	data *entity.Product,
+) error {
+	db := infra.GetDB(ctx, r.db)
+
+	err := db.Model(&entity.Product{}).
+		Where("id = ?", id).
+		Updates(map[string]interface{}{
+			"name":        data.Name,
+			"description": data.Description,
+			"price":       data.Price,
+			"image_url":   data.ImageURL,
+			"category_id": data.CategoryID,
+			"min_stock":   data.MinStock,
+		}).Error
+
+	if err != nil {
+		r.log.Error("Error update product info", zap.Error(err))
+		return err
+	}
+
+	return nil
+}
+
+func (r *productRepository) DecreaseStock(
+	ctx context.Context,
+	productID uint,
+	qty int,
+) error {
+	db := infra.GetDB(ctx, r.db)
+
+	if qty <= 0 {
+		return utils.ErrInvalidQuantity
+	}
+
+	result := db.Exec(`
+		UPDATE products
+		SET stock = stock - ?
+		WHERE id = ?
+		AND stock >= ?
+	`, qty, productID, qty)
+
+	if result.Error != nil {
+		r.log.Error("Error decrease stock", zap.Error(result.Error))
+		return result.Error
+	}
+
+	if result.RowsAffected == 0 {
+		return utils.ErrInsufficientStock
+	}
+
+	return nil
+}
+
+func (r *productRepository) IncreaseStock(
+	ctx context.Context,
+	productID uint,
+	qty int,
+) error {
+	db := infra.GetDB(ctx, r.db)
+
+	if qty <= 0 {
+		return utils.ErrInvalidQuantity
+	}
+
+	err := db.Exec(`
+		UPDATE products
+		SET stock = stock + ?
+		WHERE id = ?
+	`, qty, productID).Error
+
+	if err != nil {
+		r.log.Error("Error increase stock", zap.Error(err))
+		return err
+	}
+
+	return nil
+}
+
 func (r *productRepository) Update(product *entity.Product) error {
 	r.log.Debug("Updating product", zap.Uint("id", product.ID), zap.String("name", product.Name))
 	return r.db.Save(product).Error
 }
 
-func (r *productRepository) SoftDelete(id uint) error {
+func (r *productRepository) SoftDelete(ctx context.Context, id uint) error {
+	db := infra.GetDB(ctx, r.db)
 	r.log.Info("Soft deleting product", zap.Uint("id", id))
 
-	result := r.db.Model(&entity.Product{}).Where("id = ?", id).Update("deleted_at", gorm.Expr("NOW()"))
+	result := db.Model(&entity.Product{}).Where("id = ?", id).Update("deleted_at", gorm.Expr("NOW()"))
 	if result.Error != nil {
 		r.log.Error("Failed to soft delete product", zap.Uint("id", id), zap.Error(result.Error))
 		return result.Error
@@ -81,11 +170,12 @@ func (r *productRepository) SoftDelete(id uint) error {
 	return nil
 }
 
-func (r *productRepository) CheckHasOrderItems(id uint) (bool, error) {
+func (r *productRepository) CheckHasOrderItems(ctx context.Context, id uint) (bool, error) {
+	db := infra.GetDB(ctx, r.db)
 	r.log.Debug("Checking if product has order items", zap.Uint("id", id))
 
 	var count int64
-	err := r.db.Model(&entity.OrderItem{}).Where("product_id = ?", id).Count(&count).Error
+	err := db.Model(&entity.OrderItem{}).Where("product_id = ?", id).Count(&count).Error
 	if err != nil {
 		r.log.Error("Failed to check product order items", zap.Uint("id", id), zap.Error(err))
 		return false, err
@@ -100,13 +190,14 @@ func (r *productRepository) CheckHasOrderItems(id uint) (bool, error) {
 	return hasItems, nil
 }
 
-func (r *productRepository) FindByNameAndCategory(name string, categoryID uint) (*entity.Product, error) {
+func (r *productRepository) FindByNameAndCategory(ctx context.Context, name string, categoryID uint) (*entity.Product, error) {
+	db := infra.GetDB(ctx, r.db)
 	r.log.Debug("Finding product by name and category",
 		zap.String("name", name),
 		zap.Uint("category_id", categoryID))
 
 	var product entity.Product
-	err := r.db.Where("name = ? AND category_id = ? AND deleted_at IS NULL", name, categoryID).First(&product).Error
+	err := db.Where("name = ? AND category_id = ? AND deleted_at IS NULL", name, categoryID).First(&product).Error
 	if err != nil {
 		if errors.Is(err, gorm.ErrRecordNotFound) {
 			r.log.Debug("Product not found with name and category",
@@ -128,7 +219,8 @@ func (r *productRepository) FindByNameAndCategory(name string, categoryID uint) 
 }
 
 // FindAllWithFilter - Get products with advanced filtering and sorting
-func (r *productRepository) FindAllWithFilter(req request.GetProductsRequest) ([]entity.Product, int64, error) {
+func (r *productRepository) FindAllWithFilter(ctx context.Context, req request.GetProductsRequest) ([]entity.Product, int64, error) {
+	db := infra.GetDB(ctx, r.db)
 	r.log.Debug("Finding products with filter",
 		zap.Int("page", req.Page),
 		zap.Int("limit", req.Limit),
@@ -140,7 +232,7 @@ func (r *productRepository) FindAllWithFilter(req request.GetProductsRequest) ([
 	var total int64
 
 	// Build base query
-	query := r.db.Model(&entity.Product{}).
+	query := db.Model(&entity.Product{}).
 		Preload("Category").
 		Where("products.deleted_at IS NULL")
 
@@ -172,11 +264,12 @@ func (r *productRepository) FindAllWithFilter(req request.GetProductsRequest) ([
 }
 
 // GetSoldCount - Get total sold quantity for a product
-func (r *productRepository) GetSoldCount(productID uint) (int64, error) {
+func (r *productRepository) GetSoldCount(ctx context.Context, productID uint) (int64, error) {
+	db := infra.GetDB(ctx, r.db)
 	r.log.Debug("Getting sold count for product", zap.Uint("product_id", productID))
 
 	var totalSold int64
-	err := r.db.Model(&entity.OrderItem{}).
+	err := db.Model(&entity.OrderItem{}).
 		Select("COALESCE(SUM(quantity), 0)").
 		Where("product_id = ?", productID).
 		Scan(&totalSold).Error
@@ -257,7 +350,7 @@ func (r *productRepository) applyProductSorting(query *gorm.DB, req request.GetP
 }
 
 // OPTIONAL: Method untuk mendapatkan products dengan sold count dalam satu query
-func (r *productRepository) FindAllWithSoldCount(req request.GetProductsRequest) ([]struct {
+func (r *productRepository) FindAllWithSoldCount(ctx context.Context, req request.GetProductsRequest) ([]struct {
 	entity.Product
 	SoldCount int64 `json:"sold_count"`
 }, int64, error) {
